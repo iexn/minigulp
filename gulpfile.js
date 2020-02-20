@@ -1,124 +1,77 @@
-const gulp         = require('gulp');
-const uglify       = require('gulp-uglify');
-const babel        = require('gulp-babel');
-const rename       = require('gulp-rename');
-const clean        = require('gulp-clean');
-const include      = require('gulp-include');
+const gulp = require('gulp');
+const uglify = require('gulp-uglify');
+const babel = require('gulp-babel');
+const rename = require('gulp-rename');
+const clean = require('gulp-clean');
+const include = require('gulp-include');
 const autoprefixer = require('gulp-autoprefixer');
-const sass         = require('gulp-sass');
-const cssmin       = require('gulp-cssmin');
-const cssFormat    = require('gulp-css-format');
-const connect      = require('gulp-connect');
-const beautify     = require('gulp-beautify');
+const sass = require('gulp-sass');
+const cssmin = require('gulp-cssmin');
+const wpage = require('wpage');
 
-/**
- * Tips:
- * 1. babel转完后，注释内容会向上对齐，单行注释会与上一行合并
- * 2. 多html项目暂时不能打包单独的一套文件
- * 3. html处理完，不能添加rev的hash文件
- */
+let filename = '*';
 
-const config = {
-  baseUrl: './src/',
-  siteUrl: './site/',
-  distUrl: './dist/',
-  port: 8081
-};
-
-
-/*
-
-  [ dev ]
-
-*/
-gulp.task('dev:js', () => {
-  var stream = gulp.src(config.baseUrl + 'assets/*.js')
-    .pipe(include())
-    .pipe(beautify.js({ indent_size: 4 }))
-    .pipe(babel())
-    .pipe(gulp.dest(config.siteUrl + 'assets'));
-
-  return stream;
-});
-
-gulp.task('dev:css', () => {
-  var stream = gulp.src(config.baseUrl + 'assets/*.css')
-    .pipe(include())
-    .pipe(sass())
-    .pipe(autoprefixer({
-      remove: false,
-      grid: 'autoplace'
-    }))
-    .pipe(cssFormat({ indent: 1, hasSpace: true }))
-    .pipe(gulp.dest(config.siteUrl + 'assets'));
-
-  return stream;
-});
-
-gulp.task('dev:html', () => {
-  var stream = gulp.src(config.baseUrl + '*.html')
-    .pipe(gulp.dest(config.siteUrl));
-
-  return stream;
-});
-
-/*
-
-  [prod]
-
-*/
-gulp.task('prod:js', () => {
-  var stream = gulp.src(config.baseUrl + 'assets/*.js')
+// 打包js
+gulp.task('js', () => {
+  var stream = gulp.src('./src/assets/' + filename + '.js')
     .pipe(include())
     .pipe(babel({
       presets: ['@babel/env']
     }))
-    .pipe(gulp.dest(config.distUrl + 'assets'))
+    .pipe(gulp.dest('./dist/assets'))
+    .pipe(gulp.dest('./site/assets'))
+    .pipe(rename({extname: '.min.js'}))
     .pipe(uglify())
-    .pipe(rename(path => {
-      path.basename += '.min';
-    }))
-    .pipe(gulp.dest(config.distUrl + 'assets'));
+    .pipe(gulp.dest('./dist/assets'));
 
   return stream;
 });
 
-gulp.task('prod:css', () => {
-  var stream = gulp.src(config.baseUrl + 'assets/*.css')
+// 打包css
+gulp.task('css', () => {
+  var stream = gulp
+    .src(['./src/assets/' + filename + '.css'])
     .pipe(include())
-    .pipe(sass())
+    .pipe(sass({outputStyle: 'compact'}))
     .pipe(autoprefixer({
       remove: false,
       grid: 'autoplace'
     }))
-    .pipe(cssFormat({ indent: 1, hasSpace: true }))
-    .pipe(gulp.dest(config.distUrl + 'assets'))
+    .pipe(gulp.dest('./dist/assets'))
+    .pipe(gulp.dest('./site/assets'))
+    .pipe(rename({extname: '.min.css'}))
     .pipe(cssmin())
-    .pipe(rename(path => {
-      path.basename += '.min';
+    .pipe(gulp.dest('./dist/assets'));
+
+  return stream;
+});
+
+
+// 打包js
+gulp.task('dev:js', () => {
+  var stream = gulp.src('./src/assets/' + filename + '.js')
+    .pipe(include())
+    .pipe(babel({
+      presets: ['@babel/env']
     }))
-    .pipe(gulp.dest(config.distUrl + 'assets'));
+    .pipe(gulp.dest('./site/assets'));
 
   return stream;
 });
 
-gulp.task('prod:html', () => {
-  var stream = gulp.src(config.baseUrl + '*.html')
-    .pipe(gulp.dest(config.distUrl));
+// 打包css
+gulp.task('dev:css', () => {
+  var stream = gulp
+    .src(['./src/assets/' + filename + '.css'])
+    .pipe(include())
+    .pipe(sass({outputStyle: 'compact'}))
+    .pipe(autoprefixer({
+      remove: false,
+      grid: 'autoplace'
+    }))
+    .pipe(gulp.dest('./site/assets'));
 
   return stream;
-});
-
-
-/*
-
-  [process]
-
-*/
-
-gulp.task('reload', () => {
-  gulp.src('./site/*.html')
-    .pipe(connect.reload());
 });
 
 gulp.task('clean:app', function () {
@@ -126,33 +79,17 @@ gulp.task('clean:app', function () {
     .pipe(clean());
 });
 
-gulp.task('watch', function () {
-  gulp.watch(config.baseUrl + 'assets/css/*.scss', gulp.parallel('dev:css'));
-  gulp.watch(config.baseUrl + 'assets/js/*.js', gulp.parallel('dev:js'));
-  gulp.watch(config.baseUrl + '*.html').on('change', gulp.series(gulp.parallel('dev:html', 'reload')));
+gulp.task('watchs', function () {
+  wpage.start(8082);
+  gulp.watch('./src/assets/**/css/*.scss', gulp.parallel('dev:css'));
+  gulp.watch('./src/assets/**/js/*.js', gulp.parallel('dev:js'));
 });
 
-gulp.task('connect', () => {
-  connect.server({
-    root: 'site',
-    port: config.port,
-    livereload: true,
-    host: '::'
-  })
-});
+gulp.task('default', gulp.series(gulp.parallel('js', 'css')));
 
+gulp.task('site', gulp.series(gulp.parallel('watchs')));
 
-/*
-
-  [Set]
-
-*/
-
-gulp.task('default', gulp.series(gulp.parallel('prod:js', 'prod:css', 'prod:html')));
-
-gulp.task('site', gulp.series(gulp.parallel('connect', 'watch')));
-
-gulp.task('init', gulp.series('clean:app', gulp.parallel('default')));
+gulp.task('init', gulp.series('clean:app', gulp.parallel('js', 'css')));
 
 // 生成打包文件
 gulp.task('build', gulp.series('init'));
