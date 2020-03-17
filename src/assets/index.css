@@ -1,3 +1,4 @@
 @charset "UTF-8";
 
-/*=include ./css/reset.scss  */
+/*=include ./common/css/reset.scss  */
+/*=include ./index/css/index.scss  */

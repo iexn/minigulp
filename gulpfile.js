@@ -13,16 +13,18 @@ let filename = '*';
 
 // 打包js
 gulp.task('js', () => {
-  var stream = gulp.src('./src/assets/' + filename + '.js')
+  // TODO: 这里暂时替换成build文件夹下的文件
+  var stream = gulp.src('./src/assets/build/' + filename + '.js')
     .pipe(include())
     .pipe(babel({
       presets: ['@babel/env']
     }))
     .pipe(gulp.dest('./dist/assets'))
-    .pipe(gulp.dest('./site/assets'))
+    // .pipe(gulp.dest('./site/assets'))
     .pipe(rename({extname: '.min.js'}))
     .pipe(uglify())
-    .pipe(gulp.dest('./dist/assets'));
+    .pipe(gulp.dest('./dist/assets'))
+    // .pipe(gulp.dest('./site/assets'));
 
   return stream;
 });
@@ -38,10 +40,11 @@ gulp.task('css', () => {
       grid: 'autoplace'
     }))
     .pipe(gulp.dest('./dist/assets'))
-    .pipe(gulp.dest('./site/assets'))
+    // .pipe(gulp.dest('./site/assets'))
     .pipe(rename({extname: '.min.css'}))
     .pipe(cssmin())
-    .pipe(gulp.dest('./dist/assets'));
+    .pipe(gulp.dest('./dist/assets'))
+    // .pipe(gulp.dest('./site/assets'));
 
   return stream;
 });
@@ -89,7 +92,7 @@ gulp.task('default', gulp.series(gulp.parallel('js', 'css')));
 
 gulp.task('site', gulp.series(gulp.parallel('watchs')));
 
-gulp.task('init', gulp.series('clean:app', gulp.parallel('js', 'css')));
+gulp.task('init', gulp.series(/* 'clean:app', */ gulp.parallel('js', 'css')));
 
 // 生成打包文件
 gulp.task('build', gulp.series('init'));

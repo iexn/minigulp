@@ -1,9 +1,20 @@
 'use strict';
 
-(function (init_selector) {
-    
-    //= require ./js/Config.js
-    //= require ./js/Util.js
-    //= require ./js/Init.js
+(function (factory) {
+    const BASE = factory();
 
-})('#app');
+    //=include ./common/js/dropload.js
+    //=include ./common/js/Config.js
+    //=include ./common/js/Util.js
+    //=include ./common/js/Render.js
+    //=include ./index/js/Component.js
+    //=include ./index/js/Api.js
+
+    const QUERY = Util.getQuery();
+
+    //=include ./index/js/Init.js
+
+})(function () {
+    //=include ./common/js/factory.js
+});
+

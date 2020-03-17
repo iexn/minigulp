@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        if (sessionStorage.getItem("approvalDetailChanged") == "changed") {
+            sessionStorage.removeItem("approvalDetailChanged");
+            location.reload();
+        }
+        window.onpageshow = function (e) {
+            if (e.persisted) {
+                if (sessionStorage.getItem("approvalDetailChanged") == "changed") {
+                    sessionStorage.removeItem("approvalDetailChanged");
+                    window.location.reload(true)
+                }
+            }
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>xxx</title>
+    <link rel="stylesheet" href="./lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./assets/index.min.css?v=2020031701">
+    <script src="./assets/flexible.js"></script>
+    <script src="./lib/jquery.min.js"></script>
+</head>
+<body ontouchstart="">
+    <div id="app"></div>
+    <script src="../../../js/fastclick.js?v=2020031701"></script>
+    <script src="../../../js/config.js?v=2020031701"></script>
+    <script src="./assets/index.min.js?v=2020031701"></script>
+</body>
+</html>
