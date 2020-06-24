@@ -5,9 +5,9 @@
 npm install
 
 # 启动开发热更新
-gulp site
+npm run serve
 
 # 打包
-gulp build
+npm run build
 
 ```
