@@ -1,7 +1,7 @@
 /**
  * 工具层
  */
-const Util = function () {
+(function () {
 
     let Util = function () {};
     let _this = Util.prototype;
@@ -28,8 +28,9 @@ const Util = function () {
             setTimeout(() => {
                 document.body.removeChild(a);
             }, 2000);
+        } else {
+            window.open(url);
         }
-        window.open(url);
     };
 
     /**
@@ -661,4 +662,4 @@ const Util = function () {
     _this.Base64Encode = _Base64.encode;
 
     return new Util();
-}();
+})();

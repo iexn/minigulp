@@ -1,2 +1,2 @@
-//=include ../Component.js
+//=include ./Component.js
 

@@ -1,4 +1,4 @@
-//=include ../Component.js
+//=include ./Component.js
 
 /**
  * 软提示

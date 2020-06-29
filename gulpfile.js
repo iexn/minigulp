@@ -9,6 +9,8 @@ const sass         = require('gulp-sass');
 const cssmin       = require('gulp-cssmin');
 const cssFormat    = require('gulp-css-format');
 const wpage        = require('wpage');
+// 引入入口文件目录
+const entryDir     = "./entry";
 // dev导出目录
 const devDir       = "assets";
 // dist导出目录
@@ -18,7 +20,7 @@ const dir          = "";
 
 // 打包js
 gulp.task('js', () => {
-  var stream = gulp.src('./main/build/*.js')
+  var stream = gulp.src(entryDir + '/prod/*.js')
     .pipe(include())
     .pipe(babel({
       presets: ['@babel/env']
@@ -36,7 +38,7 @@ gulp.task('js', () => {
 // 打包css
 gulp.task('css', () => {
   var stream = gulp
-    .src(['./main/build/*.css'])
+    .src([entryDir + '/prod/*.css'])
     .pipe(include())
     .pipe(sass())
     .pipe(autoprefixer({
@@ -57,7 +59,7 @@ gulp.task('css', () => {
 
 // 打包js
 gulp.task('dev:js', () => {
-  var stream = gulp.src('./main/dev/*.js')
+  var stream = gulp.src(entryDir + '/dev/*.js')
     .pipe(include())
     .pipe(babel({
       presets: ['@babel/env']
@@ -70,7 +72,7 @@ gulp.task('dev:js', () => {
 // 打包css
 gulp.task('dev:css', () => {
   var stream = gulp
-    .src(['./main/dev/*.css'])
+    .src([entryDir + '/dev/*.css'])
     .pipe(include())
     .pipe(sass())
     .pipe(autoprefixer({
@@ -91,8 +93,10 @@ gulp.task('clean:app', function () {
 
 gulp.task('watchs', function () {
   wpage.start(8081);
-  gulp.watch('./main/**/*.css', gulp.parallel('dev:css'));
-  gulp.watch('./main/**/*.js', gulp.parallel('dev:js'));
+  gulp.watch(entryDir + '/**/*.css', gulp.parallel('dev:css'));
+  gulp.watch(entryDir + '/**/*.js', gulp.parallel('dev:js'));
+  gulp.watch('./extension/**/*.css', gulp.parallel('dev:css'));
+  gulp.watch('./extension/**/*.js', gulp.parallel('dev:js'));
 
   gulp.watch('./src/**/*.scss', gulp.parallel('dev:css'));
   gulp.watch('./src/**/*.js', gulp.parallel('dev:js'));
