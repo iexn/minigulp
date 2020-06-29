@@ -15,85 +15,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
   (function (factory) {
     /** 
-     * 创建包
-     */
-    var Package = {
-      // 依赖 jQuery
-      $: jQuery,
-      body: document.body,
-      self: document.getElementById("app")
-    };
-    /** 
-     * 功能支持：数据
-     */
-
-    Package.cache = function () {
-      var data = function data() {};
-
-      var _this = data.prototype;
-
-      _this.get = function (key, value) {
-        var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : APP_STORAGE;
-      };
-      /** 
-       * 缓存数据
-       */
-
-
-      _this.cache = function (key, value) {
-        var overdueSecond = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 60;
-        var time = Package.Util.getCalendarDate(new Date());
-        var timeKey = key + "~overdueTime";
-
-        if (value === undefined) {
-          // 获取
-          var sessionTime = sessionStorage.getItem(timeKey);
-          var sessionValue = sessionStorage.getItem(key);
-
-          if (overdueSecond == null || sessionTime == null || sessionTime < time.timestamp || sessionValue == null) {
-            sessionStorage.removeItem(timeKey);
-            sessionStorage.removeItem(key);
-            return null;
-          }
-
-          try {
-            return JSON.parse(sessionValue);
-          } catch (e) {
-            return sessionValue;
-          }
-        } else {
-          // 设置
-          if (value === null) {
-            sessionStorage.removeItem(timeKey);
-            sessionStorage.removeItem(key);
-            return null;
-          }
-
-          sessionStorage.setItem(timeKey, time.timestamp + overdueSecond * 1000);
-
-          try {
-            sessionStorage.setItem(key, JSON.stringify(value));
-          } catch (e) {
-            sessionStorage.setItem(key, value);
-          }
-
-          return value;
-        }
-      };
-
-      return data;
-    }();
-
-    "";
-    /** 
      * 功能支持：工具
      */
 
-    Package.util =
     /**
      * 工具层
      */
-    function () {
+    var util = function () {
       var Util = function Util() {};
 
       var _this = Util.prototype;
@@ -791,14 +719,74 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       _this.Base64Encode = _Base64.encode;
       return new Util();
     }();
+    /** 
+     * 功能支持：数据
+     */
 
-    "";
+
+    var cache = function () {
+      var cache = function cache() {};
+
+      var _this = cache.prototype;
+
+      _this.get = function (key, value) {
+        var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : APP_STORAGE;
+      };
+      /** 
+       * 缓存数据
+       */
+
+
+      _this.cache = function (key, value) {
+        var overdueSecond = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 60;
+        var time = Package.Util.getCalendarDate(new Date());
+        var timeKey = key + "~overdueTime";
+
+        if (value === undefined) {
+          // 获取
+          var sessionTime = sessionStorage.getItem(timeKey);
+          var sessionValue = sessionStorage.getItem(key);
+
+          if (overdueSecond == null || sessionTime == null || sessionTime < time.timestamp || sessionValue == null) {
+            sessionStorage.removeItem(timeKey);
+            sessionStorage.removeItem(key);
+            return null;
+          }
+
+          try {
+            return JSON.parse(sessionValue);
+          } catch (e) {
+            return sessionValue;
+          }
+        } else {
+          // 设置
+          if (value === null) {
+            sessionStorage.removeItem(timeKey);
+            sessionStorage.removeItem(key);
+            return null;
+          }
+
+          sessionStorage.setItem(timeKey, time.timestamp + overdueSecond * 1000);
+
+          try {
+            sessionStorage.setItem(key, JSON.stringify(value));
+          } catch (e) {
+            sessionStorage.setItem(key, value);
+          }
+
+          return value;
+        }
+      };
+
+      return cache;
+    }();
     /** 
      * 功能支持：配置
      */
 
-    Package.config = function () {
-      var CONFIG = {
+
+    var config = function () {
+      var config = {
         // 版本信息
         DEBUG: true,
         VERSION: "1.1.0",
@@ -821,30 +809,31 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           VERSION: ""
         }
       };
-      return CONFIG;
+      Object.assign(config, {
+        MINIGULP_VERSION: 1111
+      });
+      return config;
     }();
-
-    "";
     /** 
      * 功能支持：语言包
      */
 
-    Package.lang = function () {
-      var lang = function lang() {};
 
-      var _this = lang.prototype;
-      var zh_cn = {};
-      return {
-        zh_cn: zh_cn
+    var lang = function () {
+      var lang = {
+        zh_cn: {}
       };
+      Object.assign(lang, {
+        __PAGE__: "首页"
+      });
+      return lang;
     }();
-
-    "";
     /** 
      * 功能支持：自定义dom
      */
 
-    Package.render = function () {
+
+    var render = function () {
       var Render = function Render() {};
 
       var _this = Render.prototype;
@@ -959,12 +948,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       return new Render();
     }();
-
-    "";
     /** 
      * 功能支持：异步调用扩展
      * 获取异步调用关键数据
      */
+
 
     var extension = function $BASE_USER(callback) {
       callback({
@@ -984,10 +972,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * 调试函数
      */
 
-    var _debug = Package.config.DEBUG;
+    var _debug = config.DEBUG;
     var _debug_queue = 1;
 
-    Package.debug = function (text) {
+    function debug(text) {
       if (_debug) {
         var _console;
 
@@ -997,27 +985,43 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         (_console = console).warn.apply(_console, ['[' + _debug_queue++ + ']', text].concat(args));
       }
-    }; // 获取异步数据
+    }
 
+    ; // 获取异步数据
 
     extension(function (BASE) {
       // 修改最新配置信息
-      Package.config = Object.assign(BASE, Package.config); // 输出开发信息
+      Object.assign(config, BASE); // 输出开发信息
 
-      console.log("%c MiniGulp Dev CLI %c Detected lastest version is v".concat(Package.config.VERSION, " "), 'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff', 'background:#577dea ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff'); // 进入应用
+      console.log("%c MiniGulp Dev CLI %c Detected lastest version is v".concat(config.VERSION, " "), 'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff', 'background:#577dea ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff');
+      /** 
+       * 创建包
+       */
+
+      var Package = {
+        // 依赖 jQuery
+        $: jQuery,
+        body: document.body,
+        self: document.getElementById("app"),
+        cache: cache,
+        util: util,
+        config: config,
+        lang: lang,
+        render: render,
+        debug: debug
+      }; // 进入应用
 
       factory(Package);
     });
   })(function (Package) {
-    var cache = Package.cache,
-        util = Package.util,
-        config = Package.config,
-        render = Package.render,
-        debug = Package.debug;
     var $$ = Package;
-    var $ = $$.$;
-    var body = $$.body;
-    var self = $$.self;
+    var util = $$.util,
+        config = $$.config,
+        render = $$.render,
+        debug = $$.debug,
+        $ = $$.$,
+        body = $$.body,
+        self = $$.self;
     var $body = $(body);
     var $self = $(self); // 加载公共函数
 
@@ -1043,21 +1047,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       return value;
-    } // 扩展配置
-
-
-    (function () {
-      Object.assign(Package.config, {
-        MINIGULP_VERSION: 1111
-      });
-    })(); // 扩展语言包内容
-
-
-    (function () {
-      Object.assign(Package.lang.zh_cn, {
-        __PAGE__: "首页"
-      });
-    })(); // 初始化
+    } // 初始化
 
   });
 })();

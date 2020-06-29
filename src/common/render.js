@@ -1,4 +1,4 @@
-(function () {
+const render = (function () {
 
     let Render = function () {};
     let _this = Render.prototype;

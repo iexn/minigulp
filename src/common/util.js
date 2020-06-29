@@ -1,7 +1,7 @@
 /**
  * 工具层
  */
-(function () {
+const util = (function () {
 
     let Util = function () {};
     let _this = Util.prototype;

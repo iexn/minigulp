@@ -1,6 +1,6 @@
-(function () {
-    const data = function () {};
-    const _this = data.prototype;
+const cache = (function () {
+    const cache = function () {};
+    const _this = cache.prototype;
 
     _this.get = function (key, value, type = APP_STORAGE) {
 
@@ -44,5 +44,5 @@
         }
     };
 
-    return data;
+    return cache;
 })();

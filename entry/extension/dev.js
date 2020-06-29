@@ -1,4 +1,4 @@
-function $BASE_USER(callback) {
+function extension(callback) {
     callback({
         DEFAULT_AVATAR: "/shijiwxy/weixin/images/defaultHead.jpg",
         API_BASE_URL: "https://t.shijiwxy.5tree.cn",
