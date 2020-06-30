@@ -3,7 +3,8 @@ const uglify       = require('gulp-uglify');
 const babel        = require('gulp-babel');
 const rename       = require('gulp-rename');
 const clean        = require('gulp-clean');
-const include      = require('gulp-include');
+// const include      = require('gulp-include');
+const include      = require('./modules/gulp-include-extend');
 const autoprefixer = require('gulp-autoprefixer');
 const sass         = require('gulp-sass');
 const cssmin       = require('gulp-cssmin');
@@ -21,7 +22,11 @@ const dir          = "";
 // 打包js
 gulp.task('js', () => {
   var stream = gulp.src(entryDir + '/prod/*.js')
-    .pipe(include())
+    .pipe(include({
+      includePaths: [
+        __dirname + "/src"
+      ]
+    }))
     .pipe(babel({
       presets: ['@babel/env']
     }))
@@ -39,7 +44,11 @@ gulp.task('js', () => {
 gulp.task('css', () => {
   var stream = gulp
     .src([entryDir + '/prod/*.css'])
-    .pipe(include())
+    .pipe(include({
+      includePaths: [
+        __dirname + "/src"
+      ]
+    }))
     .pipe(sass())
     .pipe(autoprefixer({
       remove: false,
@@ -60,7 +69,11 @@ gulp.task('css', () => {
 // 打包js
 gulp.task('dev:js', () => {
   var stream = gulp.src(entryDir + '/dev/*.js')
-    .pipe(include())
+    .pipe(include({
+      includePaths: [
+        __dirname + "/src"
+      ]
+    }))
     .pipe(babel({
       presets: ['@babel/env']
     }))
@@ -73,7 +86,11 @@ gulp.task('dev:js', () => {
 gulp.task('dev:css', () => {
   var stream = gulp
     .src([entryDir + '/dev/*.css'])
-    .pipe(include())
+    .pipe(include({
+      includePaths: [
+        __dirname + "/src"
+      ]
+    }))
     .pipe(sass())
     .pipe(autoprefixer({
       remove: false,

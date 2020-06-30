@@ -18,13 +18,13 @@ const render = (function () {
                 let templates = Array.prototype.slice.call(arguments);
 
                 // 如果第一个参数传了数组，后面的参数无效
-                if (Util.type(template) == "array") {
+                if (util.type(template) == "array") {
                     templates = template;
                 }
 
                 templates.map(template => {
-                    let type = Util.type(template);
-                    if (Util.isEmpty(template)) {
+                    let type = util.type(template);
+                    if (util.isEmpty(template)) {
                         return false;
                     }
                     if (type == "string") {
@@ -38,7 +38,7 @@ const render = (function () {
                     if (type == "dom") {
                         return template;
                     }
-                    if (Util.type(template.el) == "dom") {
+                    if (util.type(template.el) == "dom") {
                         return template.el;
                     }
                     return false;

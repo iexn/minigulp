@@ -2,29 +2,26 @@
 
 (function () {
 // 加载常量
-//= include ../../src/common/const.js
+//= include index/js/const.js
 
 (function (factory) {
 
-    //= include ../../src/common/util.js
-    //= include ../../src/common/cache.js
-    //= include ../../src/index/js/config.js
-    //= include ../../src/index/js/lang.js
-    //= include ../../src/common/render.js
-    //= include ../extension/dev.js
-    //= include ../../src/common/debug.js
+    //= include ./../extension/dev.js
+
+    //= include common/util.js
+    //= include common/cache.js
+    //= include index/js/config.js
+    //= include index/js/lang.js
+    //= include common/debug.js
+    
+    //= include index/js/api.js
     
     // 获取异步数据
     extension(function (BASE) {
         // 修改最新配置信息
         Object.assign(config, BASE);
 
-        // 输出开发信息
-        console.log(
-            `%c MiniGulp Dev CLI %c Detected lastest version is v${config.VERSION} `,
-            'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
-            'background:#577dea ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff'
-        );
+        //= include common/plugins/devinfo.js
 
         /** 
          * 创建包
@@ -32,13 +29,11 @@
         const Package = {
             // 依赖 jQuery
             $   : jQuery,
-            body: document.body,
-            self: document.getElementById("app"),
+            api,
             cache,
             util,
             config,
             lang,
-            render,
             debug
         };
         
@@ -47,26 +42,24 @@
     });
 
 })(function (Package) {
-    const $$    = Package;
+    const $$ = Package;
 
     const {
+        api,
         util,
         config,
-        render,
         debug,
         $,
-        body,
-        self
     } = $$;
-    
+
+    const body = document.body;
+    const self = document.getElementById("app");
     const $body = $(body);
     const $self = $(self);
 
-    // 加载公共函数
-    //= include ../../src/common/common.js
-    
-    // 初始化
-    //= include ../../src/index/js/init.js
+    //= include common/common.js
+    //= include index/js/component.js
+    //= include index/js/index.js
 
 });
 

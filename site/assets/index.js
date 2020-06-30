@@ -1,36 +1,65 @@
 'use strict';
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 (function () {
   // 加载常量
   // app存储
-  var APP_STORAGE = "1"; // session存储
+  var APP_STORAGE = "app"; // session存储
 
-  var SESSION_STORAGE = "2"; // local存储
+  var SESSION_STORAGE = "session"; // local存储
 
-  var LOCAL_STORAGE = "3"; // 默认语言
+  var LOCAL_STORAGE = "local"; // 默认语言
 
-  var ZH_CN = "zh_cn";
+  var ZH_CN = "zh_cn"; // ajax请求方式
+
+  var AJAX_REQUEST_GET = "GET";
+  var AJAX_REQUEST_POST = "POST"; // ajax参数格式
+
+  var AJAX_PARAMS_MATHOD_JSON = "json";
+  var AJAX_PARAMS_MATHOD_FORMDATA = "form_data";
+  var AJAX_PARAMS_MATHOD_STRINGIFY = "stringify";
 
   (function (factory) {
-    /** 
-     * 功能支持：工具
-     */
+    function extension(callback) {
+      callback({
+        // 请求地址
+        API_HOST: "https://t.shijiwxy.5tree.cn",
+        USER: {
+          TOKEN: "36755b2361ed7a4d3ca5e364fb7d8310_1592895032366_4932698_0_cbb86e1e",
+          UDID: "5774861a-e407-4dfc-818d-4177cbb86e1e",
+          USER_ID: 4932698,
+          ORG_ID: 192,
+          VERSION: 3,
+          IS_ADMIN: true
+        }
+      });
+    }
 
-    /**
-     * 工具层
-     */
+    ;
+
     var util = function () {
-      var Util = function Util() {};
-
-      var _this = Util.prototype;
+      var util = {};
+      var toString = Object.prototype.toString;
+      var slice = Array.prototype.slice;
       /**
-       * 下载文件
-       * url：下载文件的远程地址
-       */
+         * 下载文件
+         * url：下载文件的远程地址
+         */
 
-      _this.download = function (url) {
+      util.download = function (url) {
         if (window.document) {
           var a = document.createElement("a");
           a.href = url; // 支持download时使用download，不支持时使用a标签跳转
@@ -51,11 +80,19 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
       };
       /**
-       * 判断数据的具体类型
-       */
+         * 判断传入的变量是否是一个dom对象
+         */
 
 
-      _this.type = function (mixin) {
+      util.isDom = function (dom) {
+        return (typeof HTMLElement === "undefined" ? "undefined" : _typeof(HTMLElement)) === 'object' ? dom instanceof HTMLElement : dom && _typeof(dom) === 'object' && dom.nodeType === 1 && typeof dom.nodeName === 'string';
+      };
+      /**
+         * 判断数据的具体类型
+         */
+
+
+      util.type = function (mixin) {
         if (mixin == null) {
           return mixin + "";
         }
@@ -80,66 +117,59 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
 
         if (mixin_type === 'object' || mixin_type === "function") {
-          return class2type[Object.prototype.toString.call(mixin)] || "object";
+          var _type = class2type[toString.call(mixin)];
+
+          if (!_type) {
+            return util.isDom(mixin) ? "dom" : "object";
+          } else {
+            return _type;
+          }
         }
 
         return mixin_type;
       };
       /**
-       * 获取路由切换的完整地址
-       */
+         * 是否为空值，不包括0
+         */
 
 
-      _this.getRealPath = function () {
-        var path = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+      util.isEmpty = function (mixin) {
+        var _type = util.type(mixin);
 
-        if (path == '') {
-          return Router.route;
+        if (["null", "undefined"].includes(_type)) {
+          return true;
         }
 
-        if (path.indexOf('/') == 0) {
-          return path;
+        if (_type == "boolean" && mixin == false) {
+          return true;
         }
 
-        var hash = this.getHashSimplePath(Router.route);
-        var hashs = hash == '' ? [] : hash.split('/');
-
-        var _paths = path == '' ? [] : path.split('/');
-
-        var paths = [];
-
-        for (var i = 0; i < _paths.length; i++) {
-          if (_paths[i] != hashs[i]) {
-            paths = _paths.splice(i);
-            break;
-          }
+        if (_type == "array" && mixin.length == 0) {
+          return true;
         }
 
-        for (var _i = 0; _i < paths.length; _i++) {
-          if (paths[_i] == '') {
-            continue;
-          }
-
-          if (paths[_i] == '.') {
-            continue;
-          }
-
-          if (paths[_i] == '..') {
-            hashs.pop();
-            continue;
-          }
-
-          hashs.push(paths[_i]);
+        if (_type == "object" && Object.keys(mixin).length == 0) {
+          return true;
         }
 
-        return hashs.join('/');
+        return mixin === "";
+      };
+      /** 
+         * 符合 type() 函数的验证，如果验证不成功适用默认值
+         */
+
+
+      util.defaults = function (mixin) {
+        var defaults = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
+        var compareFunction = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : isEmpty;
+        return compareFunction(mixin) ? defaults : mixin;
       };
       /**
-       * 获取某元素以浏览器左上角为原点的坐标
-       */
+         * 获取某元素以浏览器左上角为原点的坐标
+         */
 
 
-      _this.offset = function (dom) {
+      util.offset = function (dom) {
         var top = dom.offsetTop;
         var left = dom.offsetLeft;
         var width = dom.offsetWidth;
@@ -158,60 +188,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         };
       };
       /**
-       * 判断传入的变量是否是一个dom对象
-       */
+         * 从1开始的对象，遍历
+         * @param {Object} maps
+         * @param {Function} callback
+         */
 
 
-      _this.isDom = function (dom) {
-        return (typeof HTMLElement === "undefined" ? "undefined" : _typeof(HTMLElement)) === 'object' ? dom instanceof HTMLElement : dom && _typeof(dom) === 'object' && dom.nodeType === 1 && typeof dom.nodeName === 'string';
-      };
-      /**
-       * 创建上拉下拉动作
-       */
-
-
-      _this.scroll = function (DOM) {
-        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-        options = Object.assign({
-          refer: window,
-          onRefresh: function onRefresh(done) {
-            done();
-          },
-          onContinue: function onContinue(done) {
-            done();
-          }
-        }, options);
-        var DOMdropload = $(DOM).dropload({
-          scrollArea: options.refer,
-          loadDownFn: function loadDownFn(me) {
-            me.lock('up');
-            options.onContinue(function () {
-              var noData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-              me.unlock();
-              me.noData(noData);
-              me.resetload();
-            });
-          },
-          loadUpFn: function loadUpFn(me) {
-            me.lock('down');
-            options.onRefresh(function () {
-              var noData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-              me.unlock();
-              me.noData(noData);
-              me.resetload();
-            });
-          }
-        });
-        return DOMdropload;
-      };
-      /**
-       * 从1开始的对象，遍历
-       * @param {Object} maps
-       * @param {Function} callback
-       */
-
-
-      _this.likeItemObjectMap = function (maps, callback) {
+      util.likeItemObjectMap = function (maps, callback) {
         var i = 0;
         var result = [];
         var map; // eslint-disable-next-line no-constant-condition
@@ -238,8 +221,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         return result;
       };
+      /** 
+         * 获取get参数
+         */
 
-      _this.getQuery = function () {
+
+      util.getQuery = function () {
         var query = {};
         location.search.slice(1).split("&").map(function (item) {
           var srt = item.split("=");
@@ -250,145 +237,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         });
         return query;
       };
-      /**
-       * 是否为空值，不包括0
-       */
+      /** 
+         * textarea不回弹
+         */
 
 
-      _this.isEmpty = function (mixin) {
-        var _type = _this.type(mixin);
-
-        if (["null", "undefined"].includes(_type)) {
-          return true;
-        }
-
-        if (_type == "boolean" && mixin == false) {
-          return true;
-        }
-
-        if (_type == "array" && mixin.length == 0) {
-          return true;
-        }
-
-        if (_type == "object" && Object.keys(mixin).length == 0) {
-          return true;
-        }
-
-        return mixin === "";
-      }; //金额输入框实时大写
-
-
-      _this.convertCurrency = function (money) {
-        //汉字的数字
-        var cnNums = new Array("零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖"); //基本单位
-
-        var cnIntRadice = new Array("", "拾", "佰", "仟"); //对应整数部分扩展单位
-
-        var cnIntUnits = new Array("", "万", "亿", "兆"); //对应小数部分单位
-
-        var cnDecUnits = new Array("角", "分", "毫", "厘"); //整数金额时后面跟的字符
-
-        var cnInteger = "整"; //整型完以后的单位
-
-        var cnIntLast = "元"; //最大处理的数字
-
-        var maxNum = 999999999999999.9999; //金额整数部分
-
-        var integerNum; //金额小数部分
-
-        var decimalNum; //输出的中文金额字符串
-
-        var chineseStr = ""; //分离金额后用的数组，预定义
-
-        var parts;
-
-        if (money == "") {
-          return "";
-        }
-
-        if ((money + "").length > 15) {
-          return "大写转换最多支持15位数的金额！";
-        }
-
-        money = parseFloat(money);
-
-        if (money >= maxNum) {
-          //超出最大处理数字
-          return "";
-        }
-
-        if (money == 0) {
-          chineseStr = cnNums[0] + cnIntLast + cnInteger;
-          return chineseStr;
-        } //转换为字符串
-
-
-        money = money.toString();
-
-        if (money.indexOf(".") == -1) {
-          integerNum = money;
-          decimalNum = "";
-        } else {
-          parts = money.split(".");
-          integerNum = parts[0];
-          decimalNum = parts[1].substr(0, 4);
-        } //获取整型部分转换
-
-
-        if (parseInt(integerNum, 10) > 0) {
-          var zeroCount = 0;
-          var IntLen = integerNum.length;
-
-          for (var i = 0; i < IntLen; i++) {
-            var n = integerNum.substr(i, 1);
-            var p = IntLen - i - 1;
-            var q = p / 4;
-            var m = p % 4;
-
-            if (n == "0") {
-              zeroCount++;
-            } else {
-              if (zeroCount > 0) {
-                chineseStr += cnNums[0];
-              } //归零
-
-
-              zeroCount = 0;
-              chineseStr += cnNums[parseInt(n)] + cnIntRadice[m];
-            }
-
-            if (m == 0 && zeroCount < 4) {
-              chineseStr += cnIntUnits[q];
-            }
-          }
-
-          chineseStr += cnIntLast;
-        } //小数部分
-
-
-        if (decimalNum != "") {
-          var decLen = decimalNum.length;
-
-          for (var j = 0; j < decLen; j++) {
-            var nn = decimalNum.substr(j, 1);
-
-            if (nn != "0") {
-              chineseStr += cnNums[Number(nn)] + cnDecUnits[j];
-            }
-          }
-        }
-
-        if (chineseStr == "") {
-          chineseStr += cnNums[0] + cnIntLast + cnInteger;
-        } else if (decimalNum == "") {
-          chineseStr += cnInteger;
-        }
-
-        return chineseStr;
-      }; // textarea不回弹
-
-
-      Util.prototype.iosTextBlurScroll = function (input) {
+      util.iosTextBlurScroll = function (input) {
         if (!input) {
           return false;
         }
@@ -405,128 +259,139 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         input.onblur = backPageSize; // onblur是核心方法
       };
       /**
-       * 弹窗
-       * 弹窗结束后执行callback()
-       */
+         * 数字前补0变为字符串数字
+         */
 
 
-      _this.alert = function (text, callback) {
-        if ($.alert) {
-          $.alert(text, callback);
-        } else {
-          window.alert(text);
-          callback && callback();
+      util.fullZeroNumber = function (number) {
+        var size = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 2;
+
+        var __number = number + "";
+
+        if (isNaN(__number)) {
+          return number;
         }
 
-        return false;
+        while (__number.length < size) {
+          __number = "0" + __number;
+        }
+
+        return __number;
       };
       /**
-       * 确认弹窗
-       * 点击确定后出发success()
-       */
+         * 获取设置时间的小时分钟秒
+         */
 
 
-      _this.confirm = function (text, success) {
-        if (!window.confirm(text)) {
+      util.getCalendarDate = function () {
+        var ND = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new Date();
+
+        if (type(ND) == "string") {
+          ND = ND.replace(/-/g, "/");
+        }
+
+        if (isEmpty(ND)) {
+          ND = new Date();
+        } else {
+          ND = new Date(ND);
+        }
+
+        var hour = ND.getHours();
+        var minute = ND.getMinutes();
+        var second = ND.getSeconds();
+        var timestamp = ND.getTime();
+        ND = new Date(ND.getFullYear(), ND.getMonth(), ND.getDate());
+        var time = ND.getTime();
+        var NW = {
+          ND: ND,
+          year: ND.getFullYear(),
+          month: util.fullZeroNumber(ND.getMonth() + 1),
+          day: util.fullZeroNumber(ND.getDate()),
+          hour: util.fullZeroNumber(hour),
+          minute: util.fullZeroNumber(minute),
+          second: util.fullZeroNumber(second),
+          time: time,
+          timestamp: timestamp
+        };
+        NW.format = NW.year + "/" + NW.month + "/" + NW.day;
+        NW.formatText = NW.year + "年" + NW.month + "月" + NW.day + "日";
+        NW.monthFormat = NW.year + "/" + NW.month;
+        NW.monthFormatText = NW.year + "年" + NW.month + "月";
+        NW.timeFormat = NW.hour + ":" + NW.minute + ":" + NW.second;
+        NW.timeFormatText = NW.hour + "时" + NW.minute + "分" + NW.second + "秒";
+        NW.minuteTimeFormat = NW.hour + ":" + NW.minute;
+        NW.minuteTimeFormatText = NW.hour + "时" + NW.minute + "分"; // 获取当月天数，day=0时month必须+1
+
+        NW.monthDay = util.fullZeroNumber(new Date(ND.getFullYear(), ND.getMonth() + 1, 0).getDate());
+        NW.firstWeek = new Date(ND.getFullYear(), ND.getMonth()).getDay();
+        NW.firstTime = new Date(ND.getFullYear(), ND.getMonth()).getTime();
+        return NW;
+      };
+      /** 
+         * 获取 xx:xx 转为当天秒数
+         */
+
+
+      util.getHoursSecond = function (hoursFormat) {
+        if (!/^\d\d\:\d\d(\:\d\d)?$/.test(hoursFormat)) {
           return false;
         }
 
-        success && success();
+        var mm = hoursFormat.split(":");
+        return mm[0] * 3600 + mm[1] * 60;
       };
       /**
-       * 类数组转为真正数组
-       */
+         * 类数组转为真正数组
+         */
 
 
-      _this.like2Array = function (likeArray) {
-        return Array.prototype.slice.call(likeArray);
+      util.like2Array = function (likeArray) {
+        return slice.call(likeArray);
       };
       /**
-       * 人性化显示文件大小
-       */
+         * 人性化显示文件大小
+         */
 
 
-      _this.byteSize = function (size) {
+      util.byteSize = function (size) {
+        var digits = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 2;
+
         // 判断b
         if (size < 1024) {
           return size + 'byte';
         } // 判断kb
 
 
-        size = (size / 1024).toFixed(2);
+        size = (size / 1024).toFixed(digits);
 
         if (size < 1024) {
           return size + 'KB';
         } // 判断mb
 
 
-        size = (size / 1024).toFixed(2);
+        size = (size / 1024).toFixed(digits);
 
         if (size < 1024) {
           return size + 'MB';
         } // 判断gb
 
 
-        size = (size / 1024).toFixed(2);
+        size = (size / 1024).toFixed(digits);
 
         if (size < 1024) {
           return size + 'GB';
         } // tb
 
 
-        size = (size / 1024).toFixed(2);
+        size = (size / 1024).toFixed(digits);
         return size + 'TB';
       };
       /**
-       * 传入一个query字符串，返回该query的参数对象
-       */
+         * 将query转为hash字符串
+         */
 
 
-      _this.urlParse = function (query) {
-        var maps = {};
-        query.split('&').forEach(function (value) {
-          var item = value.split('=');
-          maps[item[0]] = decodeURI(item[1]);
-        });
-        return maps;
-      };
-      /**
-       * 获取某元素以浏览器左上角为原点的坐标
-       */
-
-
-      _this.offset = function (dom) {
-        var top = dom.offsetTop;
-        var left = dom.offsetLeft;
-        var width = dom.offsetWidth;
-        var height = dom.offsetHeight;
-
-        while (dom = dom.offsetParent) {
-          top += dom.offsetTop;
-          left += dom.offsetLeft;
-        }
-
-        return {
-          top: top,
-          left: left,
-          width: width,
-          height: height
-        };
-      };
-      /**
-       * 判断传入的变量是否是一个dom对象
-       */
-
-
-      _this.isDom = function (dom) {
-        return (typeof HTMLElement === "undefined" ? "undefined" : _typeof(HTMLElement)) === 'object' ? dom instanceof HTMLElement : dom && _typeof(dom) === 'object' && dom.nodeType === 1 && typeof dom.nodeName === 'string';
-      };
-      /**
-       * 将query转为hash字符串
-       */
-
-
-      _this.query2Hash = function (query) {
+      util.query2Hash = function (query) {
         var query_trim = [];
 
         for (var i in query) {
@@ -536,28 +401,29 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         return query_trim.join('&');
       };
       /**
-       * hash字符串转为query数组
-       */
+         * hash字符串转为query数组
+         */
 
 
-      _this.hash2Query = function (hash) {
+      util.hash2Query = function (hash) {
         if (hash == '') {
           return {};
         }
 
         var query = {};
         hash.split('&').forEach(function (value) {
-          var item = value.split('=');
-          query[item[0]] = decodeURI(item[1]);
+          var item = value.split('='); // query[item[0]] = decodeURIComponent(item[1]);
+
+          query[item[0]] = item[1];
         });
         return query;
       };
       /**
-       * 获取文件的md5值
-       */
+         * 获取文件的md5值
+         */
 
 
-      _this.getFileMd5 = function (file, callback) {
+      util.getFileMd5 = function (file, callback) {
         //声明必要的变量
         var fileReader = new FileReader(); //文件分割方法（注意兼容性）
 
@@ -573,7 +439,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         filesize = filesize.toFixed(2); //每块文件读取完毕之后的处理
 
         fileReader.onload = function (e) {
-          // console.log("读取文件", currentChunk + 1, "/", chunks);
+          // debug("读取文件", currentChunk + 1, "/", chunks);
           //每块交由sparkMD5进行计算
           spark.appendBinary(e.target.result);
           currentChunk++; //如果文件处理完成计算MD5，如果还有分片继续处理
@@ -599,201 +465,348 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         loadNext();
       };
-
-      var BASE64 = function BASE64() {
-        // private property  
-        var _keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="; // public method for encoding  
-
-        this.encode = function (input) {
-          var output = "";
-          var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-          var i = 0;
-          input = _utf8_encode(input);
-
-          while (i < input.length) {
-            chr1 = input.charCodeAt(i++);
-            chr2 = input.charCodeAt(i++);
-            chr3 = input.charCodeAt(i++);
-            enc1 = chr1 >> 2;
-            enc2 = (chr1 & 3) << 4 | chr2 >> 4;
-            enc3 = (chr2 & 15) << 2 | chr3 >> 6;
-            enc4 = chr3 & 63;
-
-            if (isNaN(chr2)) {
-              enc3 = enc4 = 64;
-            } else if (isNaN(chr3)) {
-              enc4 = 64;
-            }
-
-            output = output + _keyStr.charAt(enc1) + _keyStr.charAt(enc2) + _keyStr.charAt(enc3) + _keyStr.charAt(enc4);
-          }
-
-          return output;
-        }; // public method for decoding  
+      /** 
+         * 获取键盘按键format
+         */
 
 
-        this.decode = function (input) {
-          var output = "";
-          var chr1, chr2, chr3;
-          var enc1, enc2, enc3, enc4;
-          var i = 0;
-          input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+      util.boardFormat = function (_ref) {
+        var ctrlKey = _ref.ctrlKey,
+            altKey = _ref.altKey,
+            shiftKey = _ref.shiftKey,
+            keyCode = _ref.keyCode;
+        var __map = [];
 
-          while (i < input.length) {
-            enc1 = _keyStr.indexOf(input.charAt(i++));
-            enc2 = _keyStr.indexOf(input.charAt(i++));
-            enc3 = _keyStr.indexOf(input.charAt(i++));
-            enc4 = _keyStr.indexOf(input.charAt(i++));
-            chr1 = enc1 << 2 | enc2 >> 4;
-            chr2 = (enc2 & 15) << 4 | enc3 >> 2;
-            chr3 = (enc3 & 3) << 6 | enc4;
-            output = output + String.fromCharCode(chr1);
+        if (ctrlKey) {
+          __map.push("ctrl");
+        }
 
-            if (enc3 != 64) {
-              output = output + String.fromCharCode(chr2);
-            }
+        if (altKey) {
+          __map.push("alt");
+        }
 
-            if (enc4 != 64) {
-              output = output + String.fromCharCode(chr3);
-            }
-          }
+        if (shiftKey) {
+          __map.push("shift");
+        }
 
-          output = _utf8_decode(output);
-          return output;
-        }; // private method for UTF-8 encoding  
-
-
-        var _utf8_encode = function _utf8_encode(string) {
-          string = string.replace(/\r\n/g, "\n");
-          var utftext = "";
-
-          for (var n = 0; n < string.length; n++) {
-            var c = string.charCodeAt(n);
-
-            if (c < 128) {
-              utftext += String.fromCharCode(c);
-            } else if (c > 127 && c < 2048) {
-              utftext += String.fromCharCode(c >> 6 | 192);
-              utftext += String.fromCharCode(c & 63 | 128);
-            } else {
-              utftext += String.fromCharCode(c >> 12 | 224);
-              utftext += String.fromCharCode(c >> 6 & 63 | 128);
-              utftext += String.fromCharCode(c & 63 | 128);
-            }
-          }
-
-          return utftext;
-        }; // private method for UTF-8 decoding  
-
-
-        var _utf8_decode = function _utf8_decode(utftext) {
-          var string = "";
-          var i = 0;
-          var c = c1 = c2 = 0;
-
-          while (i < utftext.length) {
-            c = utftext.charCodeAt(i);
-
-            if (c < 128) {
-              string += String.fromCharCode(c);
-              i++;
-            } else if (c > 191 && c < 224) {
-              c2 = utftext.charCodeAt(i + 1);
-              string += String.fromCharCode((c & 31) << 6 | c2 & 63);
-              i += 2;
-            } else {
-              c2 = utftext.charCodeAt(i + 1);
-              c3 = utftext.charCodeAt(i + 2);
-              string += String.fromCharCode((c & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
-              i += 3;
-            }
-          }
-
-          return string;
+        var keyCodes = {
+          8: "Backspace",
+          9: "Tab",
+          13: "Enter",
+          19: "Pause",
+          20: "CapsLock",
+          27: "Esc",
+          32: " ",
+          33: "PageUp",
+          34: "PageDown",
+          35: "End",
+          36: "Home",
+          37: "Left",
+          38: "Up",
+          39: "Right",
+          40: "Down",
+          45: "Insert",
+          46: "Delete",
+          48: "0",
+          49: "1",
+          50: "2",
+          51: "3",
+          52: "4",
+          53: "5",
+          54: "6",
+          55: "7",
+          56: "8",
+          57: "9",
+          65: "a",
+          66: "b",
+          67: "c",
+          68: "d",
+          69: "e",
+          70: "f",
+          71: "g",
+          72: "h",
+          73: "i",
+          74: "j",
+          75: "k",
+          76: "l",
+          77: "m",
+          78: "n",
+          79: "o",
+          80: "p",
+          81: "q",
+          82: "r",
+          83: "s",
+          84: "t",
+          85: "u",
+          86: "v",
+          87: "w",
+          88: "x",
+          89: "y",
+          90: "z",
+          93: "ContextMenu",
+          96: "0",
+          97: "1",
+          98: "2",
+          99: "3",
+          100: "4",
+          101: "5",
+          102: "6",
+          103: "7",
+          104: "8",
+          105: "9",
+          106: "*",
+          107: "+",
+          109: "-",
+          110: ".",
+          111: "/",
+          112: "F1",
+          113: "F2",
+          114: "F3",
+          115: "F4",
+          117: "F6",
+          118: "F7",
+          119: "F8",
+          120: "F9",
+          121: "F10",
+          122: "F11",
+          123: "F12",
+          144: "NumLock",
+          145: "ScrollLock",
+          186: ";",
+          187: "=",
+          188: ",",
+          189: "-",
+          190: ".",
+          191: "/",
+          192: "`",
+          219: "[",
+          220: "\\",
+          221: "]",
+          222: "'"
         };
+
+        __map.push(keyCodes[keyCode]);
+
+        return __map.join("_").toUpperCase();
+      };
+      /** 
+         * 选中input中部分文字
+         */
+
+
+      util.selectRange = function (DOM, end) {
+        var start = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
+        if (DOM.createTextRange) {
+          //IE浏览器
+          var range = DOM.createTextRange();
+          range.moveEnd("character", end);
+          range.moveStart("character", start);
+          range.select();
+        } else {
+          // 非IE浏览器
+          DOM.setSelectionRange(start, end);
+          DOM.focus();
+        }
+      };
+      /** 
+         * 获取页面上已选中文字文本
+         */
+
+
+      util.getSelectText = function () {
+        return window.getSelection ? window.getSelection().toString() : document.selection.createRange().text;
+      };
+      /**
+         * 获取所有cookie参数
+         */
+
+
+      util.cookies = function () {
+        var cookie = {};
+
+        if (document.cookie) {
+          document.cookie.trim().split(";").map(function (__cookieSplit) {
+            var _cookieSplit$split = __cookieSplit.split("="),
+                _cookieSplit$split2 = _slicedToArray(_cookieSplit$split, 2),
+                cookieName = _cookieSplit$split2[0],
+                cookieValue = _cookieSplit$split2[1];
+
+            cookie[cookieName.trim()] = cookieValue.trim();
+          });
+        }
+
+        return cookie;
       };
 
-      var _Base64 = new BASE64();
+      util.cookie = function (name, value) {
+        var cookie = _this.cookies();
 
-      _this.Base64Decode = _Base64.decode;
-      _this.Base64Encode = _Base64.encode;
-      return new Util();
+        if (value === undefined) {
+          // 获取
+          if (name === undefined) {
+            return "";
+          } else {
+            return cookie[name];
+          }
+        } else {
+          // 设置
+          if (value == null) {
+            delete cookie[name];
+          } else {
+            cookie[name] = value;
+          }
+
+          var Days = 60 * 86400000;
+          var exp = new Date();
+          exp.setTime(exp.getTime() + Days);
+          var cookieString = ["path=/", "expires=" + exp.toGMTString()];
+
+          for (var key in cookie) {
+            cookieString.push("".concat(key, "=").concat(escape(cookie[key])));
+          }
+
+          document.cookie = cookieString.join(";");
+        }
+      }; //= block:main
+
+
+      return util;
     }();
-    /** 
-     * 功能支持：数据
-     */
-
 
     var cache = function () {
-      var cache = function cache() {};
+      var cache = {};
+      var appStorage = {};
+      var timeKeySuffix = "~overdueTime";
 
-      var _this = cache.prototype;
+      cache.get = function (key) {
+        var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : APP_STORAGE;
+        var time = util.getCalendarDate(new Date());
+        var timeKey = key + timeKeySuffix; // 过期时间
 
-      _this.get = function (key, value) {
-        var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : APP_STORAGE;
+        var storageTime; // 数据
+
+        var storageValue; // 获取数据及过期时间
+
+        switch (type) {
+          case APP_STORAGE:
+            var ase = appStorage[key];
+
+            if (util.isEmpty(ase)) {
+              ase = {
+                storageTime: null,
+                storageValue: null
+              };
+            }
+
+            storageTime = ase.overdueTime;
+            storageValue = ase.data;
+            break;
+
+          case SESSION_STORAGE:
+            storageTime = sessionStorage.getItem(timeKey);
+            storageValue = sessionStorage.getItem(key);
+
+          case LOCAL_STORAGE:
+            storageTime = localStorage.getItem(timeKey);
+            storageValue = localStorage.getItem(key);
+        } // 未获取到时
+
+
+        if (storageValue === null || storageTime === null) {
+          return null;
+        } // json字符串转为object
+
+
+        try {
+          storageValue = JSON.parse(storageValue);
+        } catch (e) {} // 如果有过期时间，检测是否已过期
+
+
+        if (~~storageTime > 0) {
+          if (storageTime < time.timestamp) {
+            sessionStorage.removeItem(timeKey);
+            sessionStorage.removeItem(key);
+            storageValue = null;
+          }
+        }
+
+        return storageValue;
       };
       /** 
        * 缓存数据
        */
 
 
-      _this.cache = function (key, value) {
-        var overdueSecond = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 60;
-        var time = Package.Util.getCalendarDate(new Date());
-        var timeKey = key + "~overdueTime";
+      cache.set = function (key, value) {
+        var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : APP_STORAGE;
+        var overdueSecond = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+        var time = util.getCalendarDate(new Date());
+        var timeKey = key + timeKeySuffix; // 过期时间，0表示不设置过期
 
-        if (value === undefined) {
-          // 获取
-          var sessionTime = sessionStorage.getItem(timeKey);
-          var sessionValue = sessionStorage.getItem(key);
+        var overdueTime = 0;
 
-          if (overdueSecond == null || sessionTime == null || sessionTime < time.timestamp || sessionValue == null) {
-            sessionStorage.removeItem(timeKey);
-            sessionStorage.removeItem(key);
-            return null;
-          }
+        if (overdueSecond !== null) {
+          overdueTime = time.timestamp + ~~overdueSecond * 1000;
+        } // 获取数据及过期时间
 
-          try {
-            return JSON.parse(sessionValue);
-          } catch (e) {
-            return sessionValue;
-          }
-        } else {
-          // 设置
-          if (value === null) {
-            sessionStorage.removeItem(timeKey);
-            sessionStorage.removeItem(key);
-            return null;
-          }
 
-          sessionStorage.setItem(timeKey, time.timestamp + overdueSecond * 1000);
+        switch (type) {
+          case APP_STORAGE:
+            if (value === null) {
+              delete appStorage[key];
+              return;
+            }
 
-          try {
-            sessionStorage.setItem(key, JSON.stringify(value));
-          } catch (e) {
-            sessionStorage.setItem(key, value);
-          }
+            appStorage[key] = {
+              storageTime: overdueTime,
+              storageValue: value
+            };
+            break;
 
-          return value;
+          case SESSION_STORAGE:
+            if (value === null) {
+              sessionStorage.removeItem(timeKey);
+              sessionStorage.removeItem(key);
+              return;
+            }
+
+            sessionStorage.setItem(timeKey, overdueTime);
+
+            try {
+              sessionStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+              sessionStorage.setItem(key, value);
+            }
+
+          case LOCAL_STORAGE:
+            if (value === null) {
+              localStorage.removeItem(timeKey);
+              localStorage.removeItem(key);
+              return;
+            }
+
+            localStorage.setItem(timeKey, overdueTime);
+
+            try {
+              localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+              localStorage.setItem(key, value);
+            }
+
         }
       };
 
       return cache;
     }();
-    /** 
-     * 功能支持：配置
-     */
-
 
     var config = function () {
       var config = {
-        // 版本信息
-        DEBUG: true,
-        VERSION: "1.1.0",
-
         /* 基本信息 */
         // 默认头像
         DEFAULT_AVATAR: "/shijiwxy/weixin/images/defaultHead.jpg",
+        // 请求路径
+        API_PATH: "",
 
         /* 用户信息 */
         USER: {
@@ -807,187 +820,250 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           ORG_ID: "",
           // 终端version
           VERSION: ""
+        },
+
+        /** 
+         * 注册jssdk功能
+         */
+        JSSDK_API_LIST: ['checkJsApi', 'onMenuShareTimeline', 'onMenuShareAppMessage', 'onMenuShareQQ', 'onMenuShareWeibo', 'onMenuShareQZone', 'hideMenuItems', 'showMenuItems', 'hideAllNonBaseMenuItem', 'showAllNonBaseMenuItem', 'translateVoice', 'startRecord', 'stopRecord', 'onVoiceRecordEnd', 'playVoice', 'onVoicePlayEnd', 'pauseVoice', 'stopVoice', 'uploadVoice', 'downloadVoice', 'chooseImage', 'previewImage', 'uploadImage', 'downloadImage', 'getNetworkType', 'openLocation', 'getLocation', 'hideOptionMenu', 'showOptionMenu', 'closeWindow', 'scanQRCode', 'chooseWXPay', 'openProductSpecificView']
+      }; // 版本信息
+
+      Object.defineProperties(config, {
+        DEBUG: {
+          value: true,
+          writable: false
+        },
+        VERSION: {
+          value: "1.1.0",
+          writable: false
         }
-      };
+      });
       Object.assign(config, {
         MINIGULP_VERSION: 1111
       });
       return config;
     }();
-    /** 
-     * 功能支持：语言包
-     */
-
 
     var lang = function () {
       var lang = {
         zh_cn: {}
       };
-      Object.assign(lang, {
+      Object.assign(lang.zh_cn, {
         __PAGE__: "首页"
       });
       return lang;
     }();
-    /** 
-     * 功能支持：自定义dom
-     */
 
+    var debug = function () {
+      var _debug = config.DEBUG;
+      var _debug_queue = 1;
 
-    var render = function () {
-      var Render = function Render() {};
+      function debug(text) {
+        if (_debug) {
+          var _console;
 
-      var _this = Render.prototype;
-
-      _this.getContainer = function () {
-        var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
-        var DOM = _this.create('<div id="' + id + '"></div>');
-
-        return {
-          el: DOM,
-          // 支持格式： 
-          // append("")  append(dom) append(Component) append([dom1, dom2, Component])
-          // append(Component, dom)
-          // 这种不行：
-          // append("", [dom]) append([Template], "")
-          append: function append(template) {
-            var templates = Array.prototype.slice.call(arguments); // 如果第一个参数传了数组，后面的参数无效
-
-            if (Util.type(template) == "array") {
-              templates = template;
-            }
-
-            templates.map(function (template) {
-              var type = Util.type(template);
-
-              if (Util.isEmpty(template)) {
-                return false;
-              }
-
-              if (type == "string") {
-                template = template.trim();
-
-                if (template.length == 0) {
-                  return false;
-                }
-
-                template = _this.create(template);
-                type = "dom";
-              }
-
-              if (type == "dom") {
-                return template;
-              }
-
-              if (Util.type(template.el) == "dom") {
-                return template.el;
-              }
-
-              return false;
-            }).filter(function (dom) {
-              return dom !== false;
-            }).map(function (dom) {
-              DOM.appendChild(dom);
-            });
-            return this;
-          },
-          render: function render(selector) {
-            if (typeof selector == 'undefined') {
-              var original = document.querySelector('#' + id);
-              original.parentNode.replaceChild(DOM, original);
-            } else {
-              var parent = document.querySelector(selector);
-              parent.append(DOM);
-            }
-
-            setTimeout(function () {
-              DOM.className = (DOM.className + " on").trim();
-            }, 100);
+          for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            args[_key - 1] = arguments[_key];
           }
-        };
-      };
-      /**
-       * 通过字符串模板创建DOM
-       * @param {String} string 字符串模板，模板必须包含一个最外层标签
-       */
 
-
-      _this.create = function (string) {
-        var Element = document.createElement('div');
-        string = string.trim();
-        var wrapMap = {
-          thead: [1, "<table>", "</table>"],
-          col: [2, "<table><colgroup>", "</colgroup></table>"],
-          tr: [2, "<table><tbody>", "</tbody></table>"],
-          td: [3, "<table><tbody><tr>", "</tr></tbody></table>"],
-          _default: [0, "", ""]
-        };
-        var tag = (/<([a-z][^\/\0>\x20\t\r\n\f]*)/i.exec(string) || ["", ""])[1].toLowerCase();
-        var wrap = wrapMap[tag] || wrapMap._default;
-        Element.innerHTML = wrap[1] + string + wrap[2];
-        var j = wrap[0];
-
-        while (j--) {
-          Element = Element.lastChild;
+          (_console = console).warn.apply(_console, ['[' + _debug_queue++ + ']', text].concat(args));
         }
-
-        return Element.firstChild;
-      };
-
-      _this.compile = function (DOM, template) {
-        var event = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
-        var Element = this.create(template);
-        event && event(Element);
-
-        if (typeof DOM == 'string') {
-          DOM = document.querySelector(DOM);
-        }
-
-        DOM.appendChild(Element);
-      };
-
-      return new Render();
-    }();
-    /** 
-     * 功能支持：异步调用扩展
-     * 获取异步调用关键数据
-     */
-
-
-    var extension = function $BASE_USER(callback) {
-      callback({
-        DEFAULT_AVATAR: "/shijiwxy/weixin/images/defaultHead.jpg",
-        API_BASE_URL: "https://t.shijiwxy.5tree.cn",
-        TOKEN: "36755b2361ed7a4d3ca5e364fb7d8310_1592895032366_4932698_0_cbb86e1e",
-        UDID: "5774861a-e407-4dfc-818d-4177cbb86e1e",
-        USER_ID: 4932698,
-        ORG_ID: 192,
-        VERSION: 3,
-        IS_ADMIN: true
-      });
-    };
-
-    "";
-    /** 
-     * 调试函数
-     */
-
-    var _debug = config.DEBUG;
-    var _debug_queue = 1;
-
-    function debug(text) {
-      if (_debug) {
-        var _console;
-
-        for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-          args[_key - 1] = arguments[_key];
-        }
-
-        (_console = console).warn.apply(_console, ['[' + _debug_queue++ + ']', text].concat(args));
       }
-    }
 
-    ; // 获取异步数据
+      ;
+      return debug;
+    }();
+
+    var api = function () {
+      var api = {};
+      /** 
+             * 获取请求参数
+             */
+
+      function requestParams() {
+        var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var method = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : AJAX_PARAMS_MATHOD_JSON;
+        var query = Object.assign(params, {
+          token: config.USER.TOKEN,
+          udid: config.USER.UDID,
+          user_id: config.USER.ID,
+          version: config.USER.VERSION,
+          org_id: config.USER.ORG_ID
+        });
+
+        switch (method) {
+          case AJAX_PARAMS_MATHOD_JSON:
+            return query;
+
+          case AJAX_PARAMS_MATHOD_FORMDATA:
+            var fd = new FormData();
+
+            for (var i in query) {
+              fd.append(i, query[i]);
+            }
+
+            return fd;
+
+          case AJAX_PARAMS_MATHOD_STRINGIFY:
+            var s = [];
+
+            for (var _i2 in query) {
+              s.push(_i2 + "=" + query[_i2]);
+            }
+
+            return s.join("&");
+        }
+      }
+
+      function post(url, data) {
+        var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+        return $.ajax({
+          url: url,
+          type: 'POST',
+          data: requestParams(data, AJAX_PARAMS_MATHOD_FORMDATA),
+          cache: false,
+          processData: false,
+          contentType: false,
+          headers: requestParams(data)
+        });
+      }
+
+      function get(url, data) {
+        var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+        return $.ajax({
+          url: url,
+          type: 'GET',
+          data: requestParams(data, AJAX_PARAMS_MATHOD_STRINGIFY),
+          cache: false,
+          processData: false,
+          contentType: false,
+          headers: requestParams(data)
+        });
+      }
+      /** 
+             * 执行请求
+             */
+
+
+      api.request = function (url) {
+        var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+        var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+        if (util.isEmpty(url)) {
+          throw "未指定请求地址";
+        }
+
+        if (url.indexOf("http") !== 0) {
+          url = config.API_HOST + "" + url;
+        }
+
+        options = Object.assign({
+          method: "POST",
+          done: function done() {},
+          fail: function fail() {}
+        }, options);
+        var request;
+
+        if (options.method == AJAX_REQUEST_GET) {
+          request = get(url, data, options);
+        } else {
+          request = post(url, data, options);
+        }
+
+        return request.done(function (result) {
+          // 如果请求成功，但接口返回失败，提示错误
+          if (result.success !== true) {
+            fail && fail({
+              code: result.code,
+              message: result.message
+            });
+            return;
+          }
+
+          done && done(result, true);
+        }).fail(function (e) {
+          // 如果是手动中断，不弹出提示
+          if (e.statusText == 'abort') {
+            return false;
+          }
+
+          fail && fail({
+            code: -1,
+            message: '服务器繁忙，请重试'
+          });
+        });
+      };
+      /** 
+             * 获取esb图片
+             */
+
+
+      api.esbImageUrl = function (url) {
+        var imgName = url.split(".")[0];
+        imgName = config.API_HOST + "/esb/res/pic/" + Math.floor(+imgName / 10000) + "/" + Math.floor(+imgName / 100) + "/" + url;
+        return imgName;
+      };
+      /** 
+             * 注册jssdk
+             */
+
+
+      api.jssdkRegister = function (done, fail) {
+        request('/shijiwxy/wechat/portal/getWxJsConfig.json', {
+          url: window.location.href
+        }, {
+          done: function (_done) {
+            function done(_x) {
+              return _done.apply(this, arguments);
+            }
+
+            done.toString = function () {
+              return _done.toString();
+            };
+
+            return done;
+          }(function (result) {
+            var access = result.data;
+            wx.config({
+              debug: false,
+              appId: access.appId,
+              timestamp: access.timestamp,
+              nonceStr: access.nonceStr,
+              signature: access.signature,
+              jsApiList: config.JSSDK_API_LIST
+            });
+            done && done();
+          }),
+          fail: function (_fail) {
+            function fail(_x2) {
+              return _fail.apply(this, arguments);
+            }
+
+            fail.toString = function () {
+              return _fail.toString();
+            };
+
+            return fail;
+          }(function (e) {
+            fail(e.message);
+          })
+        });
+      };
+
+      var urls = {
+        approval: config.API_PATH + "/approval.json"
+      };
+
+      api.approval = function (data, done, fail) {
+        api.request(urls.approval, data, {
+          done: done,
+          fail: fail
+        });
+      };
+
+      return api;
+    }(); // 获取异步数据
+
 
     extension(function (BASE) {
       // 修改最新配置信息
@@ -1001,13 +1077,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var Package = {
         // 依赖 jQuery
         $: jQuery,
-        body: document.body,
-        self: document.getElementById("app"),
+        api: api,
         cache: cache,
         util: util,
         config: config,
         lang: lang,
-        render: render,
         debug: debug
       }; // 进入应用
 
@@ -1015,15 +1089,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     });
   })(function (Package) {
     var $$ = Package;
-    var util = $$.util,
+    var api = $$.api,
+        util = $$.util,
         config = $$.config,
-        render = $$.render,
         debug = $$.debug,
-        $ = $$.$,
-        body = $$.body,
-        self = $$.self;
+        $ = $$.$;
+    var body = document.body;
+    var self = document.getElementById("app");
     var $body = $(body);
-    var $self = $(self); // 加载公共函数
+    var $self = $(self);
 
     function lang(key) {
       var language = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : ZH_CN;
@@ -1047,7 +1121,159 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       return value;
-    } // 初始化
+    }
 
+    var component = function () {
+      var render = function () {
+        var Render = function Render() {};
+
+        var _this = Render.prototype;
+
+        _this.getContainer = function () {
+          var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+          var DOM = _this.create('<div id="' + id + '"></div>');
+
+          return {
+            el: DOM,
+            // 支持格式： 
+            // append("")  append(dom) append(Component) append([dom1, dom2, Component])
+            // append(Component, dom)
+            // 这种不行：
+            // append("", [dom]) append([Template], "")
+            append: function append(template) {
+              var templates = Array.prototype.slice.call(arguments); // 如果第一个参数传了数组，后面的参数无效
+
+              if (util.type(template) == "array") {
+                templates = template;
+              }
+
+              templates.map(function (template) {
+                var type = util.type(template);
+
+                if (util.isEmpty(template)) {
+                  return false;
+                }
+
+                if (type == "string") {
+                  template = template.trim();
+
+                  if (template.length == 0) {
+                    return false;
+                  }
+
+                  template = _this.create(template);
+                  type = "dom";
+                }
+
+                if (type == "dom") {
+                  return template;
+                }
+
+                if (util.type(template.el) == "dom") {
+                  return template.el;
+                }
+
+                return false;
+              }).filter(function (dom) {
+                return dom !== false;
+              }).map(function (dom) {
+                DOM.appendChild(dom);
+              });
+              return this;
+            },
+            render: function render(selector) {
+              if (typeof selector == 'undefined') {
+                var original = document.querySelector('#' + id);
+                original.parentNode.replaceChild(DOM, original);
+              } else {
+                var parent = document.querySelector(selector);
+                parent.append(DOM);
+              }
+
+              setTimeout(function () {
+                DOM.className = (DOM.className + " on").trim();
+              }, 100);
+            }
+          };
+        };
+        /**
+         * 通过字符串模板创建DOM
+         * @param {String} string 字符串模板，模板必须包含一个最外层标签
+         */
+
+
+        _this.create = function (string) {
+          var Element = document.createElement('div');
+          string = string.trim();
+          var wrapMap = {
+            thead: [1, "<table>", "</table>"],
+            col: [2, "<table><colgroup>", "</colgroup></table>"],
+            tr: [2, "<table><tbody>", "</tbody></table>"],
+            td: [3, "<table><tbody><tr>", "</tr></tbody></table>"],
+            _default: [0, "", ""]
+          };
+          var tag = (/<([a-z][^\/\0>\x20\t\r\n\f]*)/i.exec(string) || ["", ""])[1].toLowerCase();
+          var wrap = wrapMap[tag] || wrapMap._default;
+          Element.innerHTML = wrap[1] + string + wrap[2];
+          var j = wrap[0];
+
+          while (j--) {
+            Element = Element.lastChild;
+          }
+
+          return Element.firstChild;
+        };
+
+        _this.compile = function (DOM, template) {
+          var event = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
+          var Element = this.create(template);
+          event && event(Element);
+
+          if (typeof DOM == 'string') {
+            DOM = document.querySelector(DOM);
+          }
+
+          DOM.appendChild(Element);
+        };
+
+        return new Render();
+      }();
+
+      var component = {};
+      var _this = component;
+      /** 
+       * 创建组件容器
+       */
+
+      _this.getContainer = function () {
+        var container = render.getContainer("app");
+        return container;
+      };
+      /** 
+       * 创建组件模型
+       */
+
+
+      _this.create = function (template) {
+        var DOM = render.create(template);
+        return {
+          el: DOM
+        };
+      };
+
+      component.header = function () {
+        var DOMMAP = component.create("<div>".concat(lang("__PAGE__"), "</div>"), {});
+        return DOMMAP;
+      };
+
+      return component;
+    }();
+
+    var Header = component.header();
+    var Container = component.getContainer();
+    Container.append(Header);
+    Container.render();
+    debug(Container, Header);
   });
 })();

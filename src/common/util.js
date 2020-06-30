@@ -1,16 +1,13 @@
-/**
- * 工具层
- */
-const util = (function () {
-
-    let Util = function () {};
-    let _this = Util.prototype;
+const util = function () {
+    const util = {};
+    const toString = Object.prototype.toString;
+    const slice = Array.prototype.slice;
 
     /**
      * 下载文件
      * url：下载文件的远程地址
      */
-    _this.download = function (url) {
+    util.download = function (url) {
         if (window.document) {
             let a = document.createElement("a");
             a.href = url;
@@ -31,12 +28,21 @@ const util = (function () {
         } else {
             window.open(url);
         }
-    };
+    }
+
+    /**
+     * 判断传入的变量是否是一个dom对象
+     */
+    util.isDom = function (dom) {
+        return (typeof HTMLElement === 'object') ?
+            (dom instanceof HTMLElement) :
+            (dom && typeof dom === 'object' && dom.nodeType === 1 && typeof dom.nodeName === 'string');
+    }
 
     /**
      * 判断数据的具体类型
      */
-    _this.type = function (mixin) {
+    util.type = function (mixin) {
         if (mixin == null) {
             return mixin + "";
         }
@@ -61,71 +67,48 @@ const util = (function () {
         }
 
         if (mixin_type === 'object' || mixin_type === "function") {
-            return class2type[Object.prototype.toString.call(mixin)] || "object";
+            let _type = class2type[toString.call(mixin)];
+            if (!_type) {
+                return util.isDom(mixin) ? "dom" : "object";
+            } else {
+                return _type;
+            }
         }
 
         return mixin_type;
-
-    };
+    }
 
     /**
-     * 获取路由切换的完整地址
+     * 是否为空值，不包括0
      */
-    _this.getRealPath = function () {
-        let path = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
-
-        if (path == '') {
-            return Router.route;
+    util.isEmpty = function (mixin) {
+        let _type = util.type(mixin);
+        if (["null", "undefined"].includes(_type)) {
+            return true;
         }
-
-        if (path.indexOf('/') == 0) {
-            return path;
+        if (_type == "boolean" && mixin == false) {
+            return true;
         }
-
-
-        let hash = this.getHashSimplePath(Router.route);
-
-        let hashs = hash == '' ? [] : hash.split('/');
-        let _paths = path == '' ? [] : path.split('/');
-        let paths = [];
-
-
-
-        for (var i = 0; i < _paths.length; i++) {
-            if (_paths[i] != hashs[i]) {
-                paths = _paths.splice(i);
-                break;
-            }
+        if (_type == "array" && mixin.length == 0) {
+            return true;
         }
-
-
-        for (let _i = 0; _i < paths.length; _i++) {
-
-            if (paths[_i] == '') {
-                continue;
-            }
-
-            if (paths[_i] == '.') {
-                continue;
-            }
-
-            if (paths[_i] == '..') {
-                hashs.pop();
-                continue;
-            }
-
-            hashs.push(paths[_i]);
+        if (_type == "object" && Object.keys(mixin).length == 0) {
+            return true;
         }
+        return mixin === "";
+    }
 
-
-        return hashs.join('/');
-    };
+    /** 
+     * 符合 type() 函数的验证，如果验证不成功适用默认值
+     */
+    util.defaults = function (mixin, defaults = "", compareFunction = isEmpty) {
+        return compareFunction(mixin) ? defaults : mixin;
+    }
 
     /**
      * 获取某元素以浏览器左上角为原点的坐标
      */
-    _this.offset = function (dom) {
+    util.offset = function (dom) {
         let top = dom.offsetTop;
         let left = dom.offsetLeft;
         let width = dom.offsetWidth;
@@ -141,57 +124,14 @@ const util = (function () {
             width: width,
             height: height
         };
-    };
-
-    /**
-     * 判断传入的变量是否是一个dom对象
-     */
-    _this.isDom = function (dom) {
-        return (typeof HTMLElement === 'object') ?
-            (dom instanceof HTMLElement) :
-            (dom && typeof dom === 'object' && dom.nodeType === 1 && typeof dom.nodeName === 'string');
-
-    };
-
-    /**
-     * 创建上拉下拉动作
-     */
-    _this.scroll = function (DOM, options = {}) {
-        options = Object.assign({
-            refer: window,
-            onRefresh: function (done) { done(); },
-            onContinue: function (done) { done(); },
-        }, options);
-
-        let DOMdropload = $(DOM).dropload({
-            scrollArea: options.refer,
-            loadDownFn: function (me) {
-                me.lock('up');
-                options.onContinue(function (noData = false) {
-                    me.unlock();
-                    me.noData(noData);
-                    me.resetload();
-                });
-            },
-            loadUpFn: function (me) {
-                me.lock('down');
-                options.onRefresh(function (noData = false) {
-                    me.unlock();
-                    me.noData(noData);
-                    me.resetload();
-                });
-            }
-        });
-
-        return DOMdropload;
-    };
+    }
 
     /**
      * 从1开始的对象，遍历
      * @param {Object} maps
      * @param {Function} callback
      */
-    _this.likeItemObjectMap = function (maps, callback) {
+    util.likeItemObjectMap = function (maps, callback) {
         let i = 0;
         let result = [];
         let map;
@@ -217,9 +157,12 @@ const util = (function () {
         }
 
         return result;
-    };
+    }
 
-    _this.getQuery = function () {
+    /** 
+     * 获取get参数
+     */
+    util.getQuery = function () {
         let query = {};
         location.search.slice(1).split("&").map(item => {
             let srt = item.split("=");
@@ -228,132 +171,12 @@ const util = (function () {
             }
         });
         return query;
-    };
+    }
 
-    /**
-     * 是否为空值，不包括0
+    /** 
+     * textarea不回弹
      */
-    _this.isEmpty = function (mixin) {
-        let _type = _this.type(mixin);
-        if (["null", "undefined"].includes(_type)) {
-            return true;
-        }
-        if (_type == "boolean" && mixin == false) {
-            return true;
-        }
-        if (_type == "array" && mixin.length == 0) {
-            return true;
-        }
-        if (_type == "object" && Object.keys(mixin).length == 0) {
-            return true;
-        }
-        return mixin === "";
-    };
-
-    //金额输入框实时大写
-    _this.convertCurrency = function (money) {
-        //汉字的数字
-        var cnNums = new Array("零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖"); //基本单位
-        var cnIntRadice = new Array("", "拾", "佰", "仟"); //对应整数部分扩展单位
-        var cnIntUnits = new Array("", "万", "亿", "兆"); //对应小数部分单位
-        var cnDecUnits = new Array("角", "分", "毫", "厘"); //整数金额时后面跟的字符
-        var cnInteger = "整"; //整型完以后的单位
-        var cnIntLast = "元"; //最大处理的数字
-        var maxNum = 999999999999999.9999; //金额整数部分
-        var integerNum; //金额小数部分
-        var decimalNum; //输出的中文金额字符串
-        var chineseStr = ""; //分离金额后用的数组，预定义
-        var parts;
-        if (money == "") {
-            return "";
-        }
-
-        if ((money + "").length > 15) {
-            return "大写转换最多支持15位数的金额！";
-        }
-
-        money = parseFloat(money);
-
-        if (money >= maxNum) {
-            //超出最大处理数字
-
-            return "";
-        }
-
-        if (money == 0) {
-            chineseStr = cnNums[0] + cnIntLast + cnInteger;
-
-            return chineseStr;
-        } //转换为字符串
-
-        money = money.toString();
-
-        if (money.indexOf(".") == -1) {
-            integerNum = money;
-
-            decimalNum = "";
-        } else {
-            parts = money.split(".");
-
-            integerNum = parts[0];
-
-            decimalNum = parts[1].substr(0, 4);
-        } //获取整型部分转换
-
-        if (parseInt(integerNum, 10) > 0) {
-            var zeroCount = 0;
-            var IntLen = integerNum.length;
-
-            for (var i = 0; i < IntLen; i++) {
-                var n = integerNum.substr(i, 1);
-                var p = IntLen - i - 1;
-                var q = p / 4;
-                var m = p % 4;
-
-                if (n == "0") {
-                    zeroCount++;
-                } else {
-                    if (zeroCount > 0) {
-                        chineseStr += cnNums[0];
-                    }
-
-                    //归零
-                    zeroCount = 0;
-                    chineseStr += cnNums[parseInt(n)] + cnIntRadice[m];
-                }
-
-                if (m == 0 && zeroCount < 4) {
-                    chineseStr += cnIntUnits[q];
-                }
-            }
-
-            chineseStr += cnIntLast;
-        }
-
-        //小数部分
-        if (decimalNum != "") {
-            var decLen = decimalNum.length;
-
-            for (var j = 0; j < decLen; j++) {
-                var nn = decimalNum.substr(j, 1);
-
-                if (nn != "0") {
-                    chineseStr += cnNums[Number(nn)] + cnDecUnits[j];
-                }
-            }
-        }
-
-        if (chineseStr == "") {
-            chineseStr += cnNums[0] + cnIntLast + cnInteger;
-        } else if (decimalNum == "") {
-            chineseStr += cnInteger;
-        }
-
-        return chineseStr;
-    };
-
-    // textarea不回弹
-    Util.prototype.iosTextBlurScroll = function (input) {
+    util.iosTextBlurScroll = function (input) {
         if (!input) {
             return false;
         }
@@ -367,118 +190,128 @@ const util = (function () {
         }
 
         input.onblur = backPageSize; // onblur是核心方法
-    };
+    }
 
     /**
-     * 弹窗
-     * 弹窗结束后执行callback()
+     * 数字前补0变为字符串数字
      */
-    _this.alert = function (text, callback) {
-        if ($.alert) {
-            $.alert(text, callback);
-        } else {
-            window.alert(text);
-            callback && callback();
+    util.fullZeroNumber = function (number, size = 2) {
+        let __number = number + "";
+        if (isNaN(__number)) {
+            return number;
         }
-        return false;
-    };
+        while(__number.length < size) {
+            __number = "0" + __number;
+        }
+        return __number;
+    }
 
     /**
-     * 确认弹窗
-     * 点击确定后出发success()
+     * 获取设置时间的小时分钟秒
      */
-    _this.confirm = function (text, success) {
-        if (!window.confirm(text)) {
+    util.getCalendarDate = function (ND = new Date) {
+        if (type(ND) == "string") {
+            ND = ND.replace(/-/g, "/");
+        }
+
+        if (isEmpty(ND)) {
+            ND = new Date;
+        } else {
+            ND = new Date(ND);
+        }
+
+        let hour      = ND.getHours();
+        let minute    = ND.getMinutes();
+        let second    = ND.getSeconds();
+        let timestamp = ND.getTime();
+        
+        ND = new Date(ND.getFullYear(), ND.getMonth(), ND.getDate());
+        let time = ND.getTime();
+
+        let NW = {
+            ND       : ND,
+            year     : ND.getFullYear(),
+            month    : util.fullZeroNumber(ND.getMonth() + 1),
+            day      : util.fullZeroNumber(ND.getDate()),
+            hour     : util.fullZeroNumber(hour),
+            minute   : util.fullZeroNumber(minute),
+            second   : util.fullZeroNumber(second),
+            time     : time,
+            timestamp: timestamp
+        };
+
+        NW.format          = NW.year + "/" + NW.month + "/" + NW.day;
+        NW.formatText      = NW.year + "年" + NW.month + "月" + NW.day + "日";
+        NW.monthFormat     = NW.year + "/" + NW.month;
+        NW.monthFormatText = NW.year + "年" + NW.month + "月";
+
+        NW.timeFormat           = NW.hour + ":" + NW.minute + ":" + NW.second;
+        NW.timeFormatText       = NW.hour + "时" + NW.minute + "分" + NW.second + "秒";
+        NW.minuteTimeFormat     = NW.hour + ":" + NW.minute;
+        NW.minuteTimeFormatText = NW.hour + "时" + NW.minute + "分";
+
+        // 获取当月天数，day=0时month必须+1
+        NW.monthDay  = util.fullZeroNumber((new Date(ND.getFullYear(), ND.getMonth() + 1, 0)).getDate());
+        NW.firstWeek = (new Date(ND.getFullYear(), ND.getMonth())).getDay();
+        NW.firstTime = (new Date(ND.getFullYear(), ND.getMonth())).getTime();
+
+        return NW;
+    }
+
+    /** 
+     * 获取 xx:xx 转为当天秒数
+     */
+    util.getHoursSecond = function (hoursFormat) {
+        if (!/^\d\d\:\d\d(\:\d\d)?$/.test(hoursFormat)) {
             return false;
         }
-        success && success();
-    };
+        var mm = hoursFormat.split(":");
+        return mm[0] * 3600 + mm[1] * 60;
+    }
 
     /**
      * 类数组转为真正数组
      */
-    _this.like2Array = function (likeArray) {
-        return Array.prototype.slice.call(likeArray);
-    };
+    util.like2Array = function (likeArray) {
+        return slice.call(likeArray);
+    }
 
     /**
      * 人性化显示文件大小
      */
-    _this.byteSize = function (size) {
+    util.byteSize = function (size, digits = 2) {
         // 判断b
         if (size < 1024) {
             return size + 'byte';
         }
 
         // 判断kb
-        size = (size / 1024).toFixed(2);
+        size = (size / 1024).toFixed(digits);
         if (size < 1024) {
             return size + 'KB';
         }
 
         // 判断mb
-        size = (size / 1024).toFixed(2);
+        size = (size / 1024).toFixed(digits);
         if (size < 1024) {
             return size + 'MB';
         }
 
         // 判断gb
-        size = (size / 1024).toFixed(2);
+        size = (size / 1024).toFixed(digits);
         if (size < 1024) {
             return size + 'GB';
         }
 
         // tb
-        size = (size / 1024).toFixed(2);
+        size = (size / 1024).toFixed(digits);
         return size + 'TB';
-    };
-
-    /**
-     * 传入一个query字符串，返回该query的参数对象
-     */
-    _this.urlParse = function (query) {
-        var maps = {};
-        query.split('&').forEach(function (value) {
-            var item = value.split('=');
-            maps[item[0]] = decodeURI(item[1]);
-        });
-        return maps;
-    };
-
-    /**
-     * 获取某元素以浏览器左上角为原点的坐标
-     */
-    _this.offset = function (dom) {
-        let top = dom.offsetTop;
-        let left = dom.offsetLeft;
-        let width = dom.offsetWidth;
-        let height = dom.offsetHeight;
-
-        while (dom = dom.offsetParent) {
-            top += dom.offsetTop;
-            left += dom.offsetLeft;
-        }
-        return {
-            top: top,
-            left: left,
-            width: width,
-            height: height
-        };
-    };
-
-    /**
-     * 判断传入的变量是否是一个dom对象
-     */
-    _this.isDom = function (dom) {
-        return (typeof HTMLElement === 'object') ?
-            (dom instanceof HTMLElement) :
-            (dom && typeof dom === 'object' && dom.nodeType === 1 && typeof dom.nodeName === 'string');
-    };
+    }
 
     /**
      * 将query转为hash字符串
      */
-    _this.query2Hash = function (query) {
+    util.query2Hash = function (query) {
         let query_trim = [];
 
         for (let i in query) {
@@ -486,27 +319,28 @@ const util = (function () {
         }
 
         return query_trim.join('&');
-    };
+    }
 
     /**
      * hash字符串转为query数组
      */
-    _this.hash2Query = function (hash) {
+    util.hash2Query = function (hash) {
         if (hash == '') {
             return {};
         }
         var query = {};
         hash.split('&').forEach(function (value) {
             var item = value.split('=');
-            query[item[0]] = decodeURI(item[1]);
+            // query[item[0]] = decodeURIComponent(item[1]);
+            query[item[0]] = item[1];
         });
         return query;
-    };
+    }
 
     /**
      * 获取文件的md5值
      */
-    _this.getFileMd5 = function (file, callback) {
+    util.getFileMd5 = function (file, callback) {
         //声明必要的变量
         let fileReader = new FileReader();
         //文件分割方法（注意兼容性）
@@ -524,7 +358,7 @@ const util = (function () {
         filesize = filesize.toFixed(2);
         //每块文件读取完毕之后的处理
         fileReader.onload = function (e) {
-            // console.log("读取文件", currentChunk + 1, "/", chunks);
+            // debug("读取文件", currentChunk + 1, "/", chunks);
             //每块交由sparkMD5进行计算
             spark.appendBinary(e.target.result);
             currentChunk++;
@@ -551,115 +385,201 @@ const util = (function () {
         }
 
         loadNext();
-    };
-
-    let BASE64 = function() {  
- 
-        // private property  
-        let _keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";  
-     
-        // public method for encoding  
-        this.encode = function (input) {  
-            var output = "";  
-            var chr1, chr2, chr3, enc1, enc2, enc3, enc4;  
-            var i = 0;  
-            input = _utf8_encode(input);  
-            while (i < input.length) {  
-                chr1 = input.charCodeAt(i++);  
-                chr2 = input.charCodeAt(i++);  
-                chr3 = input.charCodeAt(i++);  
-                enc1 = chr1 >> 2;  
-                enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);  
-                enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);  
-                enc4 = chr3 & 63;  
-                if (isNaN(chr2)) {  
-                    enc3 = enc4 = 64;  
-                } else if (isNaN(chr3)) {  
-                    enc4 = 64;  
-                }  
-                output = output +  
-                _keyStr.charAt(enc1) + _keyStr.charAt(enc2) +  
-                _keyStr.charAt(enc3) + _keyStr.charAt(enc4);  
-            }  
-            return output;  
-        }  
-     
-        // public method for decoding  
-        this.decode = function (input) {  
-            var output = "";  
-            var chr1, chr2, chr3;  
-            var enc1, enc2, enc3, enc4;  
-            var i = 0;  
-            input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");  
-            while (i < input.length) {  
-                enc1 = _keyStr.indexOf(input.charAt(i++));  
-                enc2 = _keyStr.indexOf(input.charAt(i++));  
-                enc3 = _keyStr.indexOf(input.charAt(i++));  
-                enc4 = _keyStr.indexOf(input.charAt(i++));  
-                chr1 = (enc1 << 2) | (enc2 >> 4);  
-                chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);  
-                chr3 = ((enc3 & 3) << 6) | enc4;  
-                output = output + String.fromCharCode(chr1);  
-                if (enc3 != 64) {  
-                    output = output + String.fromCharCode(chr2);  
-                }  
-                if (enc4 != 64) {  
-                    output = output + String.fromCharCode(chr3);  
-                }  
-            }  
-            output = _utf8_decode(output);  
-            return output;  
-        }  
-     
-        // private method for UTF-8 encoding  
-        let _utf8_encode = function (string) {  
-            string = string.replace(/\r\n/g,"\n");  
-            var utftext = "";  
-            for (var n = 0; n < string.length; n++) {  
-                var c = string.charCodeAt(n);  
-                if (c < 128) {  
-                    utftext += String.fromCharCode(c);  
-                } else if((c > 127) && (c < 2048)) {  
-                    utftext += String.fromCharCode((c >> 6) | 192);  
-                    utftext += String.fromCharCode((c & 63) | 128);  
-                } else {  
-                    utftext += String.fromCharCode((c >> 12) | 224);  
-                    utftext += String.fromCharCode(((c >> 6) & 63) | 128);  
-                    utftext += String.fromCharCode((c & 63) | 128);  
-                }  
-     
-            }  
-            return utftext;  
-        }  
-     
-        // private method for UTF-8 decoding  
-        let _utf8_decode = function (utftext) {  
-            var string = "";  
-            var i = 0;  
-            var c = c1 = c2 = 0;  
-            while ( i < utftext.length ) {  
-                c = utftext.charCodeAt(i);  
-                if (c < 128) {  
-                    string += String.fromCharCode(c);  
-                    i++;  
-                } else if((c > 191) && (c < 224)) {  
-                    c2 = utftext.charCodeAt(i+1);  
-                    string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));  
-                    i += 2;  
-                } else {  
-                    c2 = utftext.charCodeAt(i+1);  
-                    c3 = utftext.charCodeAt(i+2);  
-                    string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));  
-                    i += 3;  
-                }  
-            }  
-            return string;  
-        }  
     }
 
-    let _Base64 = new BASE64();
-    _this.Base64Decode = _Base64.decode;
-    _this.Base64Encode = _Base64.encode;
+    /** 
+     * 获取键盘按键format
+     */
+    util.boardFormat = function ({ ctrlKey, altKey, shiftKey, keyCode }) {
+        let __map = [];
 
-    return new Util();
-})();
+        if (ctrlKey) {
+            __map.push("ctrl");
+        }
+
+        if (altKey) {
+            __map.push("alt");
+        }
+
+        if (shiftKey) {
+            __map.push("shift");
+        }
+
+        let keyCodes = {
+            8: "Backspace",
+            9: "Tab",
+            13: "Enter",
+            19: "Pause",
+            20: "CapsLock",
+            27: "Esc",
+            32: " ",
+            33: "PageUp",
+            34: "PageDown",
+            35: "End",
+            36: "Home",
+            37: "Left",
+            38: "Up",
+            39: "Right",
+            40: "Down",
+            45: "Insert",
+            46: "Delete",
+            48: "0",
+            49: "1",
+            50: "2",
+            51: "3",
+            52: "4",
+            53: "5",
+            54: "6",
+            55: "7",
+            56: "8",
+            57: "9",
+            65: "a",
+            66: "b",
+            67: "c",
+            68: "d",
+            69: "e",
+            70: "f",
+            71: "g",
+            72: "h",
+            73: "i",
+            74: "j",
+            75: "k",
+            76: "l",
+            77: "m",
+            78: "n",
+            79: "o",
+            80: "p",
+            81: "q",
+            82: "r",
+            83: "s",
+            84: "t",
+            85: "u",
+            86: "v",
+            87: "w",
+            88: "x",
+            89: "y",
+            90: "z",
+            93: "ContextMenu",
+            96: "0",
+            97: "1",
+            98: "2",
+            99: "3",
+            100: "4",
+            101: "5",
+            102: "6",
+            103: "7",
+            104: "8",
+            105: "9",
+            106: "*",
+            107: "+",
+            109: "-",
+            110: ".",
+            111: "/",
+            112: "F1",
+            113: "F2",
+            114: "F3",
+            115: "F4",
+            117: "F6",
+            118: "F7",
+            119: "F8",
+            120: "F9",
+            121: "F10",
+            122: "F11",
+            123: "F12",
+            144: "NumLock",
+            145: "ScrollLock",
+            186: ";",
+            187: "=",
+            188: ",",
+            189: "-",
+            190: ".",
+            191: "/",
+            192: "`",
+            219: "[",
+            220: "\\",
+            221: "]",
+            222: "'",
+        };
+
+        __map.push(keyCodes[keyCode]);
+
+        return __map.join("_").toUpperCase();
+    }
+
+    /** 
+     * 选中input中部分文字
+     */
+    util.selectRange = function (DOM, end, start = 0) {
+        if (DOM.createTextRange) {
+            //IE浏览器
+            var range = DOM.createTextRange();
+            range.moveEnd("character", end);
+            range.moveStart("character", start);
+            range.select();
+        } else {
+            // 非IE浏览器
+            DOM.setSelectionRange(start, end);
+            DOM.focus();
+        }
+    }
+
+    /** 
+     * 获取页面上已选中文字文本
+     */
+    util.getSelectText = function () {
+        return window.getSelection ? window.getSelection().toString() :     
+        document.selection.createRange().text;
+    }
+
+    /**
+     * 获取所有cookie参数
+     */
+    util.cookies = function () {
+        const cookie = {};
+        if (document.cookie) {
+            document.cookie
+                .trim()
+                .split(";")
+                .map(__cookieSplit => {
+                    let [cookieName, cookieValue] = __cookieSplit.split("=");
+                    cookie[cookieName.trim()] = cookieValue.trim();
+                });
+        }
+        return cookie;
+    }
+
+    util.cookie = function (name, value) {
+        const cookie = _this.cookies();
+        if (value === undefined) {
+            // 获取
+            if (name === undefined) {
+                return "";
+            } else {
+                return cookie[name];
+            }
+        } else {
+            // 设置
+            if (value == null) {
+                delete cookie[name];
+            } else {
+                cookie[name] = value;
+            }
+
+            var Days = 60 * 86400000;
+            var exp = new Date();
+            exp.setTime(exp.getTime() + Days);
+
+            let cookieString = ["path=/", "expires=" + exp.toGMTString()];
+
+            for (let key in cookie) {
+                cookieString.push(`${key}=${escape(cookie[key])}`);
+            }
+
+            document.cookie = cookieString.join(";");
+        }
+    }
+    
+    //= block:main
+
+    return util;
+}();
