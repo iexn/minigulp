@@ -1,5 +1,13 @@
 'use strict';
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -834,7 +842,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           writable: false
         },
         VERSION: {
-          value: "1.1.0",
+          value: "1.2.0",
           writable: false
         }
       });
@@ -1125,15 +1133,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
     var component = function () {
       var render = function () {
-        var Render = function Render() {};
+        var render = {};
 
-        var _this = Render.prototype;
-
-        _this.getContainer = function () {
+        render.getContainer = function () {
           var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
-          var DOM = _this.create('<div id="' + id + '"></div>');
-
+          var DOM = render.create('<div id="' + id + '"></div>');
           return {
             el: DOM,
             // 支持格式： 
@@ -1162,7 +1166,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
                     return false;
                   }
 
-                  template = _this.create(template);
+                  template = render.create(template);
                   type = "dom";
                 }
 
@@ -1203,7 +1207,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
          */
 
 
-        _this.create = function (string) {
+        render.create = function (string) {
           var Element = document.createElement('div');
           string = string.trim();
           var wrapMap = {
@@ -1225,7 +1229,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           return Element.firstChild;
         };
 
-        _this.compile = function (DOM, template) {
+        render.compile = function (DOM, template) {
           var event = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
           var Element = this.create(template);
           event && event(Element);
@@ -1237,33 +1241,187 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           DOM.appendChild(Element);
         };
 
-        return new Render();
+        return render;
       }();
 
       var component = {};
-      var _this = component;
       /** 
        * 创建组件容器
        */
 
-      _this.getContainer = function () {
+      component.getContainer = function () {
         var container = render.getContainer("app");
         return container;
       };
+      /**
+       * 获取定制数组重构方法
+       */
+
+
+      function getArrayArgumentations(callback) {
+        var aryMethods = ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse'];
+        var arrayArgumentations = [];
+        aryMethods.forEach(function (method) {
+          var original = Array.prototype[method];
+
+          arrayArgumentations[method] = function () {
+            var result = original.apply(this, arguments);
+            callback && callback(method);
+            return result;
+          };
+        }); // 清空数组只保留项数
+
+        arrayArgumentations.clear = function () {
+          var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+          this.length = length;
+          callback && callback('clear');
+          return this;
+        };
+
+        return arrayArgumentations;
+      }
+
+      ;
+      /** 
+       * 热更新
+       * 未扩展数组中是对象，对象里面的监听情况
+       */
+
+      function hotData() {
+        var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var callback = arguments.length > 1 ? arguments[1] : undefined;
+        var deepPrefix = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "";
+        var __DATA__ = {};
+
+        var _loop = function _loop(name) {
+          var data_type = util.type(data[name]);
+
+          if (data_type == "array") {
+            data[name].__proto__ = getArrayArgumentations(function (method) {
+              callback && callback(deepPrefix + name, [data[name]]);
+              data._cache_list_length = data.list.length;
+            });
+            __DATA__[name] = data[name];
+          } else if (data_type == "object") {
+            __DATA__[name] = hotData(data[name], callback, name + ".");
+          } else {
+            Object.defineProperty(__DATA__, name, {
+              get: function get() {
+                return data[name];
+              },
+              set: function set(val) {
+                data[name] = val;
+                callback && callback(deepPrefix + name, [val]);
+                return data[name];
+              }
+            });
+          }
+        };
+
+        for (var name in data) {
+          _loop(name);
+        }
+
+        return __DATA__;
+      }
+      /** 
+       * 热更新
+       */
+
+
+      component.hotData = hotData;
       /** 
        * 创建组件模型
        */
 
-
-      _this.create = function (template) {
+      component.create = function (template) {
+        var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+        var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
         var DOM = render.create(template);
-        return {
-          el: DOM
-        };
+        var bindSet = {};
+
+        function on(key, callback) {
+          if (!bindSet.hasOwnProperty(key)) {
+            bindSet[key] = [];
+          }
+
+          bindSet[key].push({
+            key: key,
+            callback: callback
+          });
+        }
+
+        function off(key, callback) {
+          if (!bindSet.hasOwnProperty(key)) {
+            return;
+          }
+
+          for (var i = bindSet[key].length - 1; i >= 0; i--) {
+            if (bindSet[key][i].callback == callback) {
+              bindSet[key].splice(i, 1);
+            }
+          }
+        }
+
+        function trigger(key, params, defaults) {
+          var isTrigger = false;
+
+          if (bindSet.hasOwnProperty(key)) {
+            bindSet[key].map(function (set) {
+              if (set.callback) {
+                isTrigger = true;
+                set.callback.apply(set, params);
+              }
+            });
+          }
+
+          if (!isTrigger) {
+            defaults && defaults.apply(void 0, [key].concat(_toConsumableArray(params)));
+          }
+        }
+
+        function onDataChange(name, vals) {
+          callback && callback();
+        }
+
+        options = Object.assign({
+          accessDom: false
+        }, options);
+        var dataChange = null;
+
+        var __DATA__ = hotData(data, function (name, vals) {
+          trigger(name, vals, dataChange);
+        });
+
+        var DOMMAP = {
+          el: DOM,
+          data: __DATA__,
+          on: on,
+          off: off,
+          onDataChange: function onDataChange(callback) {
+            dataChange = callback;
+          }
+        }; // 是否将数据存入到dom上的__DATA__变量中
+
+        if (options.accessDom) {
+          DOM.__proto__.__DATA__ = __DATA__;
+        }
+
+        return DOMMAP;
       };
 
       component.header = function () {
-        var DOMMAP = component.create("<div>".concat(lang("__PAGE__"), "</div>"), {});
+        var DOMMAP = component.create("<div>".concat(lang("__PAGE__"), "</div>"), {
+          name: 111,
+          list: [{
+            id: 1,
+            name: "投递员"
+          }],
+          formSet: {
+            id: 20,
+            auths: [1, 3, 4]
+          }
+        });
         return DOMMAP;
       };
 
@@ -1274,6 +1432,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     var Container = component.getContainer();
     Container.append(Header);
     Container.render();
-    debug(Container, Header);
+
+    var componentHeaderListener__name = function componentHeaderListener__name(val) {
+      debug(1111111111);
+    }; // Header.on("name", componentHeaderListener__name)
+    // Header.on("list", componentHeaderListener__name)
+
+
+    Header.on("formSet.id", componentHeaderListener__name); // Header.onDataChange(function (name, value) {
+    //     debug(name, value);
+    // });
+
+    console.log(Header);
+    Header.data.name = 222;
+    Header.data.list.push(123, 222);
+    Header.data.formSet.id = 49;
   });
 })();

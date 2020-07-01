@@ -1,11 +1,10 @@
 const render = (function () {
 
-    let Render = function () {};
-    let _this = Render.prototype;
+    let render = {};
 
-    _this.getContainer = function (id = '') {
+    render.getContainer = function (id = '') {
 
-        let DOM = _this.create('<div id="'+ id +'"></div>');
+        let DOM = render.create('<div id="'+ id +'"></div>');
 
         return {
             el: DOM,
@@ -32,7 +31,7 @@ const render = (function () {
                         if (template.length == 0) {
                             return false;
                         }
-                        template = _this.create(template);
+                        template = render.create(template);
                         type = "dom";
                     }
                     if (type == "dom") {
@@ -69,7 +68,7 @@ const render = (function () {
      * 通过字符串模板创建DOM
      * @param {String} string 字符串模板，模板必须包含一个最外层标签
      */
-    _this.create = function (string) {
+    render.create = function (string) {
         let Element = document.createElement('div');
         string = string.trim();
 
@@ -91,7 +90,7 @@ const render = (function () {
         return Element.firstChild;
     };
 
-    _this.compile = function (DOM, template, event = function () {}) {
+    render.compile = function (DOM, template, event = function () {}) {
         let Element = this.create(template);
         event && event(Element);
         if (typeof DOM == 'string') {
@@ -100,5 +99,5 @@ const render = (function () {
         DOM.appendChild(Element);
     };
 
-    return new Render;
+    return render;
 })();
