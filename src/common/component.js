@@ -41,33 +41,47 @@ const component = (function () {
      * 未扩展数组中是对象，对象里面的监听情况
      */
     function hotData(data = {}, callback, deepPrefix = "") {
-        const __DATA__ = {};
+        
 
-        for (let name in data) {
-            let data_type = util.type(data[name]);
-            if (data_type == "array") {
-                data[name].__proto__ = getArrayArgumentations(method => {
-                    callback && callback(deepPrefix + name, [ data[name] ]);
-                    data._cache_list_length = data.list.length;
-                });
-                __DATA__[name] = data[name];
-            } else if(data_type == "object") {
-                __DATA__[name] = hotData(data[name], callback, name + ".");
-            } else {
-                Object.defineProperty(__DATA__, name, {
-                    get() {
-                        return data[name];
-                    },
-                    set(val) {
-                        data[name] = val;
-                        callback && callback(deepPrefix + name, [ val ]);
-                        return data[name];
-                    }
-                });
+        let _type = util.type(data);
+        if (_type == "array") {
+            data.__proto__ = getArrayArgumentations(method => {
+                callback && callback(deepPrefix + name, [ data ]);
+            });
+
+            for (let i = 0; i < data.length; i++) {
+                data[i] = hotData(data[i], callback, deepPrefix + i + ".");
             }
+
+            return data;
+            
+        } else if (_type == "object") {
+            const __DATA__ = {};
+
+            for (let name in data) {
+                let data_type = util.type(data[name]);
+                if (data_type == "array") {
+                    __DATA__[name] = hotData(data[name], callback, deepPrefix + name + ".");
+                } else if(data_type == "object") {
+                    __DATA__[name] = hotData(data[name], callback, deepPrefix + name + ".");
+                } else {
+                    Object.defineProperty(__DATA__, name, {
+                        get() {
+                            return data[name];
+                        },
+                        set(val) {
+                            data[name] = val;
+                            callback && callback(deepPrefix + name, [ val ]);
+                            return data[name];
+                        }
+                    });
+                }
+            }
+
+            return __DATA__;
         }
 
-        return __DATA__;
+        return data;
     }
 
     /** 

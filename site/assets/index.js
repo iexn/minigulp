@@ -1291,38 +1291,51 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         var callback = arguments.length > 1 ? arguments[1] : undefined;
         var deepPrefix = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "";
-        var __DATA__ = {};
 
-        var _loop = function _loop(name) {
-          var data_type = util.type(data[name]);
+        var _type = util.type(data);
 
-          if (data_type == "array") {
-            data[name].__proto__ = getArrayArgumentations(function (method) {
-              callback && callback(deepPrefix + name, [data[name]]);
-              data._cache_list_length = data.list.length;
-            });
-            __DATA__[name] = data[name];
-          } else if (data_type == "object") {
-            __DATA__[name] = hotData(data[name], callback, name + ".");
-          } else {
-            Object.defineProperty(__DATA__, name, {
-              get: function get() {
-                return data[name];
-              },
-              set: function set(val) {
-                data[name] = val;
-                callback && callback(deepPrefix + name, [val]);
-                return data[name];
-              }
-            });
+        if (_type == "array") {
+          data.__proto__ = getArrayArgumentations(function (method) {
+            callback && callback(deepPrefix + name, [data]);
+          });
+
+          for (var i = 0; i < data.length; i++) {
+            data[i] = hotData(data[i], callback, deepPrefix + i + ".");
           }
-        };
 
-        for (var name in data) {
-          _loop(name);
+          return data;
+        } else if (_type == "object") {
+          var __DATA__ = {};
+
+          var _loop = function _loop(_name) {
+            var data_type = util.type(data[_name]);
+
+            if (data_type == "array") {
+              __DATA__[_name] = hotData(data[_name], callback, deepPrefix + _name + ".");
+            } else if (data_type == "object") {
+              __DATA__[_name] = hotData(data[_name], callback, deepPrefix + _name + ".");
+            } else {
+              Object.defineProperty(__DATA__, _name, {
+                get: function get() {
+                  return data[_name];
+                },
+                set: function set(val) {
+                  data[_name] = val;
+                  callback && callback(deepPrefix + _name, [val]);
+                  return data[_name];
+                }
+              });
+            }
+          };
+
+          for (var _name in data) {
+            _loop(_name);
+          }
+
+          return __DATA__;
         }
 
-        return __DATA__;
+        return data;
       }
       /** 
        * 热更新
@@ -1434,18 +1447,18 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     Container.render();
 
     var componentHeaderListener__name = function componentHeaderListener__name(val) {
-      debug(1111111111);
+      debug(val);
     }; // Header.on("name", componentHeaderListener__name)
-    // Header.on("list", componentHeaderListener__name)
 
 
-    Header.on("formSet.id", componentHeaderListener__name); // Header.onDataChange(function (name, value) {
+    Header.on("list", componentHeaderListener__name);
+    Header.on("list.0.id", componentHeaderListener__name); // Header.on("formSet.id", componentHeaderListener__name)
+    // Header.onDataChange(function (name, value) {
     //     debug(name, value);
     // });
 
     console.log(Header);
-    Header.data.name = 222;
     Header.data.list.push(123, 222);
-    Header.data.formSet.id = 49;
+    Header.data.list[0].id = 3;
   });
 })();
