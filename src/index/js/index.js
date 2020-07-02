@@ -18,7 +18,7 @@ Header.on("list.0.id", componentHeaderListener__name)
 //     debug(name, value);
 // });
 
-console.log(Header)
+debug(Header)
 
 Header.data.list.push(123, 222)
 Header.data.list[0].id = 3;

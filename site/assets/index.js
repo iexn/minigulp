@@ -56,8 +56,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       });
     }
 
-    ;
-
     var util = function () {
       var util = {};
       var toString = Object.prototype.toString;
@@ -1457,7 +1455,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     //     debug(name, value);
     // });
 
-    console.log(Header);
+    debug(Header);
     Header.data.list.push(123, 222);
     Header.data.list[0].id = 3;
   });

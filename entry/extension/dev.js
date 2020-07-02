@@ -12,4 +12,4 @@ function extension(callback) {
             IS_ADMIN: true
         }
     });
-};
+}

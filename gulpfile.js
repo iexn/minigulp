@@ -31,11 +31,18 @@ gulp.task('js', () => {
       presets: ['@babel/env']
     }))
     .pipe(gulp.dest('./dist/' + buildDir))
-    .pipe(gulp.dest(dir))
-    .pipe(rename({extname: '.min.js'}))
+
+  if (dir) {
+    stream = stream.pipe(gulp.dest(dir));
+  }
+  
+  stream.pipe(rename({extname: '.min.js'}))
     .pipe(uglify())
     .pipe(gulp.dest('./dist/' + buildDir))
-    .pipe(gulp.dest(dir));
+
+  if (dir) {
+    stream = stream.pipe(gulp.dest(dir));
+  }
 
   return stream;
 });
@@ -56,11 +63,18 @@ gulp.task('css', () => {
     }))
     .pipe(cssFormat())
     .pipe(gulp.dest('./dist/' + buildDir))
-    .pipe(gulp.dest(dir))
-    .pipe(rename({extname: '.min.css'}))
+  
+  if (dir) {
+    stream = stream.pipe(gulp.dest(dir));
+  }
+  
+  stream.pipe(rename({extname: '.min.css'}))
     .pipe(cssmin())
     .pipe(gulp.dest('./dist/' + buildDir))
-    .pipe(gulp.dest(dir));
+
+  if (dir) {
+    stream = stream.pipe(gulp.dest(dir));
+  }
 
   return stream;
 });
@@ -104,7 +118,7 @@ gulp.task('dev:css', () => {
 });
 
 gulp.task('clean:app', function () {
-  return gulp.src('dist', { read: false })
+  return gulp.src('dist/assets', { read: false })
     .pipe(clean());
 });
 
@@ -123,7 +137,7 @@ gulp.task('default', gulp.series(gulp.parallel('js', 'css')));
 
 gulp.task('site', gulp.series(gulp.parallel('watchs')));
 
-gulp.task('init', gulp.series(/* 'clean:app', */ gulp.parallel('js', 'css')));
+gulp.task('init', gulp.series('clean:app', gulp.parallel('js', 'css')));
 
 // 生成打包文件
 gulp.task('build', gulp.series('init'));
