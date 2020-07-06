@@ -123,7 +123,7 @@ gulp.task('clean:app', function () {
 });
 
 gulp.task('watchs', function () {
-  wpage.start(8081);
+  wpage.start();
   gulp.watch(entryDir + '/**/*.css', gulp.parallel('dev:css'));
   gulp.watch(entryDir + '/**/*.js', gulp.parallel('dev:js'));
   gulp.watch('./extension/**/*.css', gulp.parallel('dev:css'));
