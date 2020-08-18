@@ -3,6 +3,45 @@ const util = function () {
     const toString = Object.prototype.toString;
     const slice = Array.prototype.slice;
 
+    /** 
+     * 获取当前设备类型
+     */
+    util.device = function () {
+        var userAgentInfo = navigator.userAgent;
+        var Agents = ["Android", "iPhone",
+            "SymbianOS", "Windows Phone",
+            "iPad", "iPod"];
+        var flag = true;
+        for (var v = 0; v < Agents.length; v++) {
+            if (userAgentInfo.indexOf(Agents[v]) > 0) {
+                flag = false;
+                break;
+            }
+        }
+
+        // 如果未找到以上标识，视为pc端
+        if (flag) {
+            return "pc";
+        }
+
+        // 安卓
+        if (userAgentInfo.indexOf('Android') > -1 || userAgentInfo.indexOf('Linux') > -1) {
+            return "android";
+        }
+
+        // iOS
+        if (!!userAgentInfo.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/)) {
+            return "ios";
+        }
+
+        return "unknown";
+    }
+
+    util.isWechatDevice = function () {
+        var ua = window.navigator.userAgent.toLowerCase();
+        return !!(ua.match(/MicroMessenger/i) == 'micromessenger');
+    }
+
     /**
      * 下载文件
      * url：下载文件的远程地址
@@ -101,7 +140,7 @@ const util = function () {
     /** 
      * 符合 type() 函数的验证，如果验证不成功适用默认值
      */
-    util.defaults = function (mixin, defaults = "", compareFunction = isEmpty) {
+    util.defaults = function (mixin, defaults = "", compareFunction = util.isEmpty) {
         return compareFunction(mixin) ? defaults : mixin;
     }
 
@@ -210,11 +249,11 @@ const util = function () {
      * 获取设置时间的小时分钟秒
      */
     util.getCalendarDate = function (ND = new Date) {
-        if (type(ND) == "string") {
+        if (util.type(ND) == "string") {
             ND = ND.replace(/-/g, "/");
         }
 
-        if (isEmpty(ND)) {
+        if (util.isEmpty(ND)) {
             ND = new Date;
         } else {
             ND = new Date(ND);
@@ -577,6 +616,41 @@ const util = function () {
 
             document.cookie = cookieString.join(";");
         }
+    }
+
+    util.formDataMap = function (formData, loop = function (value, key) { return value }) {
+        let data = {};
+        for (let key of formData.keys()) {
+            let value = loop(formData.get(key), key);;
+            if (value === false) {
+                continue;
+            }
+            data[key] = value;
+        }
+        return data;
+    }
+
+    util.lang = function (key, language, err = function () {}) {
+        const langs = lang[language];
+    
+        if (!langs) {
+            err && err(`[Lang]: 语言包 ${language} 不可用，可能未设置语言包`);
+            return "";
+        }
+    
+        if (!langs.hasOwnProperty(key)) {
+            err && err("[Lang]: 未找到的语言包内容，加载关键字：" + key);
+            return "";
+        }
+    
+        let value = langs[key];
+    
+        if (typeof value != "string") {
+            err && err(`[Lang]: 语言包关键字 ${key} 加载错误：可能设置了一个不可读取或非字符串类型的语言`);
+            return "";
+        }
+    
+        return value;
     }
     
     //= block:main
