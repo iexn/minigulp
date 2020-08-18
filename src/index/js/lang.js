@@ -1,9 +1,27 @@
-const lang = (function () {
-    //= include common/lang.js
-
-    Object.assign(lang.zh_cn, {
-        __PAGE__: "首页"
-    });
-
-    return lang;
-})();
+Object.assign(Package.lang.zh_cn, {
+    __PAGE__               : "首页",
+    __LOGIN_TITLE__        : "安全验证",
+    __LOGIN_ERROR__        : "安全验证失败",
+    __MSG_WARN__           : "您的密码存在信息安全隐患，请修改后重新登录。",
+    __INPUT_NO_SPACE__     : "不能包含空格",
+    __INPUT_LIMIT_LENGTH__ : "长度为8-16个字符",
+    __INPUT_SET_MAX__      : "必须包含字母、数字、英文符号中至少两种",
+    __INPUT_REPEAT__       : "两次输入的新密码不一致",
+    __FORM_LABEL_OLD__     : "旧密码",
+    __FORM_LABEL_NEW__     : "新密码",
+    __FORM_LABEL_REPEAT__  : "确认密码",
+    __PLACEHOLDER_OLD__    : "请输入旧密码",
+    __PLACEHOLDER_NEW__    : "请输入新密码",
+    __PLACEHOLDER_REPEAT__ : "重复输入新密码",
+    __SAVE_AND_RELOGIN__   : "保存并重新登录",
+    __CONFIRM_SUBMIT_MSG__ : "提交验证",
+    __SUBMIT_LOADING_MSG__ : "保存中",
+    __TIPTEXT_OLD__        : "请填写旧密码",
+    __TIPTEXT_NEW__        : "请填写新密码",
+    __TIPTEXT_REPEAT__     : "请填写确认密码",
+    __NO_TIPTEXT_FORMDATA__: "请填写密码",
+    __NO_SPACE_TIP__       : "新密码不能包含空格",
+    __LIMIT_LENGTH_TIP__   : "新密码长度为8-16个字符",
+    __SET_MAX_TIP__        : "新密码必须包含字母、数字、英文符号中至少两种",
+    __REPEAT_TIP__         : "新密码和确认密码不一致",
+});
