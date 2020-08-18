@@ -41,8 +41,6 @@ const component = (function () {
      * 未扩展数组中是对象，对象里面的监听情况
      */
     function hotData(data = {}, callback, deepPrefix = "") {
-        
-
         let _type = util.type(data);
         if (_type == "array") {
             data.__proto__ = getArrayArgumentations(method => {
@@ -66,6 +64,7 @@ const component = (function () {
                     __DATA__[name] = hotData(data[name], callback, deepPrefix + name + ".");
                 } else {
                     Object.defineProperty(__DATA__, name, {
+                        enumerable: true,
                         get() {
                             return data[name];
                         },
@@ -93,6 +92,16 @@ const component = (function () {
      * 创建组件模型
      */
     component.create = function (template, data = {}, options = {}) {
+        // 处理带数据的字符串模板
+        // 匹配如同 {{name}} 的字符串模板
+        const reg = /\{\{(\w+)\}\}/g;
+        let exec = null;
+        // 依次获取匹配内容
+        while(exec = reg.exec(template)) {
+            // 替换掉真实数据，如果不存在数据，将替换为空字符串
+            template = template.replace(new RegExp(exec[0], "g"), util.defaults(data[exec[1]], ""));
+        }
+
         let DOM = render.create(template);
         
         let bindSet = {};
@@ -146,7 +155,7 @@ const component = (function () {
         let dataChange = null;
 
         let __DATA__ = hotData(data, function (name, vals) {
-            trigger(name, vals, dataChange);
+            trigger("data:" + name, vals, dataChange);
         });
 
         let DOMMAP = {
@@ -154,10 +163,40 @@ const component = (function () {
             data: __DATA__,
             on,
             off,
+            trigger,
             onDataChange: function (callback) {
                 dataChange = callback;
-            }
+            },
+            append: function (template) {
+                let templates = Array.prototype.slice.call(arguments);
+
+                // 如果第一个参数传了数组，后面的参数无效
+                if (util.type(template) == "array") {
+                    templates = template;
+                }
+
+                templates.map(template => {
+                    if (template.__OBJTYPE__ == OBJTYPE) {
+                        DOM.appendChild(template.el);
+                    } else {
+                        debug("未识别的模板内容：template不是一个" + OBJTYPE + "对象，已被系统忽略");
+                    }
+                    return false;
+                }).filter(dom => {
+                    return dom !== false;
+                }).map(dom => {
+                    DOM.appendChild(dom);
+                });
+
+                return this;
+            },
         };
+
+        Object.defineProperty(DOMMAP, "__OBJTYPE__", {
+            enumerable: false,
+            value: OBJTYPE,
+            writable: false
+        });
 
         // 是否将数据存入到dom上的__DATA__变量中
         if (options.accessDom) {

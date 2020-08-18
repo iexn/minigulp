@@ -2,7 +2,8 @@ const config = {
     /* 基本信息 */
     // 默认头像
     DEFAULT_AVATAR: "/shijiwxy/weixin/images/defaultHead.jpg",
-
+    // 请求域名
+    API_HOST: window.BaseWTDomain || "",
     // 请求路径
     API_PATH: "",
 

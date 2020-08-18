@@ -1,6 +1,19 @@
 const api = (function () {
 
     const api = {};
+    
+    let _xhrFields = {};
+    // 处理请求前xhr，每次请求完毕后还原为 {}
+    Object.defineProperty(api, "xhrFields", {
+        enumerable: false,
+        get() {
+            return _xhrFields;
+        },
+        set() {
+            _xhrFields = {};
+            return _xhrFields;
+        }
+    })
 
     /** 
      * 获取请求参数
@@ -9,7 +22,7 @@ const api = (function () {
         let query = Object.assign(params, {
             token  : config.USER.TOKEN,
             udid   : config.USER.UDID,
-            user_id: config.USER.ID,
+            // user_id: config.USER.USER_ID,
             version: config.USER.VERSION,
             org_id : config.USER.ORG_ID
         });
@@ -40,7 +53,13 @@ const api = (function () {
             cache: false,
             processData: false,
             contentType: false,
-            headers: requestParams(data)
+            headers: requestParams(),
+            // xhrFields: (function () {
+            //     let fields = api.xhrFields;
+            //     api.xhrFields = {};
+            //     return fields;
+            // })(),
+            // crossDomain: true
         });
     }
 
@@ -52,7 +71,13 @@ const api = (function () {
             cache: false,
             processData: false,
             contentType: false,
-            headers: requestParams(data)
+            headers: requestParams(),
+            // xhrFields: (function () {
+            //     let fields = api.xhrFields;
+            //     api.xhrFields = {};
+            //     return fields;
+            // })(),
+            // crossDomain: true
         });
     }
 
@@ -86,20 +111,20 @@ const api = (function () {
             .done(function (result) {
                 // 如果请求成功，但接口返回失败，提示错误
                 if (result.success !== true) {
-                    fail && fail({
+                    options.fail && options.fail({
                         code: result.code,
                         message: result.message
                     });
                     return;
                 }
-                done && done(result, true);
+                options.done && options.done(result, true);
             })
             .fail(function (e) {
                 // 如果是手动中断，不弹出提示
                 if (e.statusText == 'abort') {
                     return false;
                 }
-                fail && fail({
+                options.fail && options.fail({
                     code: -1,
                     message: '服务器繁忙，请重试'
                 });

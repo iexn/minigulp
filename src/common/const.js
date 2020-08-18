@@ -6,7 +6,8 @@ const SESSION_STORAGE = "session";
 const LOCAL_STORAGE = "local";
 // 默认语言
 const ZH_CN = "zh_cn";
-
+// 模板标识符
+const OBJTYPE = "DOMMAP";
 // ajax请求方式
 const AJAX_REQUEST_GET = "GET";
 const AJAX_REQUEST_POST = "POST";
