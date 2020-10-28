@@ -149,10 +149,6 @@ const component = (function () {
             }
         }
 
-        function onDataChange(name, vals) {
-            callback && callback();
-        }
-
         options = Object.assign({
             accessDom: false
         }, options);

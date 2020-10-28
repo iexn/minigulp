@@ -77,6 +77,7 @@ const render = (function () {
             col: [ 2, "<table><colgroup>", "</colgroup></table>" ],
             tr: [ 2, "<table><tbody>", "</tbody></table>" ],
             td: [ 3, "<table><tbody><tr>", "</tr></tbody></table>" ],
+            th: [ 3, "<table><tbody><tr>", "</tr></tbody></table>" ],
             _default: [ 0, "", "" ]
         };
         let tag = ( ( /<([a-z][^\/\0>\x20\t\r\n\f]*)/i ).exec( string ) || [ "", "" ] )[ 1 ].toLowerCase();

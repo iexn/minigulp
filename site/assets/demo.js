@@ -1133,7 +1133,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         writable: false
       },
       VERSION: {
-        value: "1.3.0",
+        value: "1.3.1",
         writable: false
       }
     });
@@ -1440,6 +1440,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             col: [2, "<table><colgroup>", "</colgroup></table>"],
             tr: [2, "<table><tbody>", "</tbody></table>"],
             td: [3, "<table><tbody><tr>", "</tr></tbody></table>"],
+            th: [3, "<table><tbody><tr>", "</tr></tbody></table>"],
             _default: [0, "", ""]
           };
           var tag = (/<([a-z][^\/\0>\x20\t\r\n\f]*)/i.exec(string) || ["", ""])[1].toLowerCase();
@@ -1634,10 +1635,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           if (!isTrigger) {
             defaults && defaults.apply(void 0, [key].concat(_toConsumableArray(params)));
           }
-        }
-
-        function onDataChange(name, vals) {
-          callback && callback();
         }
 
         options = Object.assign({
