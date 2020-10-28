@@ -18,14 +18,18 @@ const api = (function () {
     /** 
      * 获取请求参数
      */
-    function requestParams(params = {}, method = AJAX_PARAMS_MATHOD_JSON) {
-        let query = Object.assign(params, {
-            token  : config.USER.TOKEN,
-            udid   : config.USER.UDID,
-            // user_id: config.USER.USER_ID,
-            version: config.USER.VERSION,
-            org_id : config.USER.ORG_ID
-        });
+    function requestParams(params = {}, method = AJAX_PARAMS_MATHOD_JSON, takeCommonQuery = true) {
+        let query = Object.assign({}, params);
+
+        if (takeCommonQuery) {
+            Object.assign(query, {
+                token  : config.USER.TOKEN,
+                udid   : config.USER.UDID,
+                // user_id: config.USER.USER_ID,
+                version: config.USER.VERSION,
+                org_id : config.USER.ORG_ID
+            });
+        }
 
         switch (method) {
             case AJAX_PARAMS_MATHOD_JSON:
@@ -49,7 +53,7 @@ const api = (function () {
         return $.ajax({
             url: url,
             type: 'POST',
-            data: requestParams(data, AJAX_PARAMS_MATHOD_FORMDATA),
+            data: requestParams(data, AJAX_PARAMS_MATHOD_FORMDATA, false),
             cache: false,
             processData: false,
             contentType: false,
@@ -67,7 +71,7 @@ const api = (function () {
         return $.ajax({
             url: url,
             type: 'GET',
-            data: requestParams(data, AJAX_PARAMS_MATHOD_STRINGIFY),
+            data: requestParams(data, AJAX_PARAMS_MATHOD_STRINGIFY, false),
             cache: false,
             processData: false,
             contentType: false,

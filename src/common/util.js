@@ -201,9 +201,13 @@ const util = function () {
     /** 
      * 获取get参数
      */
-    util.getQuery = function () {
+    util.getQuery = function (search = location.search) {
         let query = {};
-        location.search.slice(1).split("&").map(item => {
+        if (search.indexOf("?") != -1) {
+            search = search.split("?")[1];
+        }
+
+        search.split("&").map(item => {
             let srt = item.split("=");
             if (srt[0] != "") {
                 query[srt[0]] = srt[1];
@@ -249,8 +253,12 @@ const util = function () {
      * 获取设置时间的小时分钟秒
      */
     util.getCalendarDate = function (ND = new Date) {
+        if (ND.hasOwnProperty("__calendarDate__")) {
+            return ND;
+        }
+
         if (util.type(ND) == "string") {
-            ND = ND.replace(/-/g, "/");
+            ND = ND.trim().replace(/-/g, "/");
         }
 
         if (util.isEmpty(ND)) {
@@ -259,40 +267,92 @@ const util = function () {
             ND = new Date(ND);
         }
 
-        let hour      = ND.getHours();
-        let minute    = ND.getMinutes();
-        let second    = ND.getSeconds();
-        let timestamp = ND.getTime();
-        
-        ND = new Date(ND.getFullYear(), ND.getMonth(), ND.getDate());
-        let time = ND.getTime();
-
         let NW = {
-            ND       : ND,
-            year     : ND.getFullYear(),
-            month    : util.fullZeroNumber(ND.getMonth() + 1),
-            day      : util.fullZeroNumber(ND.getDate()),
-            hour     : util.fullZeroNumber(hour),
-            minute   : util.fullZeroNumber(minute),
-            second   : util.fullZeroNumber(second),
-            time     : time,
-            timestamp: timestamp
+            // 时间对象
+            ND: ND,
+            // 年
+            year: ND.getFullYear() + "",
+            // 月
+            month: util.fullZeroNumber(ND.getMonth() + 1),
+            // 日
+            day: util.fullZeroNumber(ND.getDate()),
+            // 小时
+            hour: util.fullZeroNumber(ND.getHours()),
+            // 分钟
+            minute: util.fullZeroNumber(ND.getMinutes()),
+            // 秒
+            second: util.fullZeroNumber(ND.getSeconds()),
+            // 周
+            week: ND.getDay() == 0 ? "7" : ND.getDay() + "",
+            // 当前时间毫秒时间戳
+            timestamp: ND.getTime() + "",
+            // 正常时间戳
+            time: parseInt(ND.getTime() / 1000) + ""
         };
 
-        NW.format          = NW.year + "/" + NW.month + "/" + NW.day;
-        NW.formatText      = NW.year + "年" + NW.month + "月" + NW.day + "日";
-        NW.monthFormat     = NW.year + "/" + NW.month;
-        NW.monthFormatText = NW.year + "年" + NW.month + "月";
+        Object.defineProperty(NW, "__calendarDate__", {
+            enumerable: false,
+            value: ND,
+            writable: false
+        });
 
-        NW.timeFormat           = NW.hour + ":" + NW.minute + ":" + NW.second;
-        NW.timeFormatText       = NW.hour + "时" + NW.minute + "分" + NW.second + "秒";
-        NW.minuteTimeFormat     = NW.hour + ":" + NW.minute;
-        NW.minuteTimeFormatText = NW.hour + "时" + NW.minute + "分";
+        NW.secondTimestamp = NW.timestamp.slice(0, -3);
 
-        // 获取当月天数，day=0时month必须+1
-        NW.monthDay  = util.fullZeroNumber((new Date(ND.getFullYear(), ND.getMonth() + 1, 0)).getDate());
-        NW.firstWeek = (new Date(ND.getFullYear(), ND.getMonth())).getDay();
-        NW.firstTime = (new Date(ND.getFullYear(), ND.getMonth())).getTime();
+        // 格式化显示
+        NW.format = function (format = "Y-m-d") {
+            let formatExec = /[YmdHis]/g;
+            let formatMap = {
+                "Y": NW.year,
+                "m": NW.month,
+                "d": NW.day,
+                "H": NW.hour,
+                "i": NW.minute,
+                "s": NW.second,
+                "w": NW.week
+            };
+            let p = null;
+            let text = format;
+            while (p = formatExec.exec(format)) {
+                text = text.replace(p[0], formatMap[p[0]]);
+            }
+            return text;
+        }
+
+        function overall(ND) {
+            if (ND.getTime() == NW.timestamp) {
+                return NW;
+            }
+            return util.getCalendarDate(ND);
+        }
+
+        // 依据当天的统计信息
+        NW.overall = {};
+        let overallMap = {
+            day: [NW.year, +NW.month - 1, NW.day],
+            firstOfYear: [NW.year, 0, 1],
+            endOfYear: [+NW.year + 1, 0, 0],
+            firstOfMonth: [NW.year, +NW.month - 1, 1],
+            endOfMonth: [NW.year, NW.month, 0],
+        };
+
+        for (let name in overallMap) {
+            NW.overall[name] = function () {
+                return overall(new Date(...overallMap[name]));
+            }
+        }
+
+        // 计算范围距离
+        NW.step = {
+            day: function () {
+                return (Math.floor(NW.step.secondOfYear / 86400) + 1) + "";
+            },
+            week: function () {
+                return (Math.floor((NW.step.day() - NW.week) / 7) + 1) + "";
+            },
+            secondOfYear: function () {
+                return (NW.overall.day().secondTimestamp - NW.overall.firstOfYear().secondTimestamp) + "";
+            }
+        };
 
         return NW;
     }

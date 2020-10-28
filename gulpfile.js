@@ -36,7 +36,7 @@ gulp.task('js', () => {
     stream = stream.pipe(gulp.dest(dir));
   }
   
-  stream.pipe(rename({extname: '.min.js'}))
+  stream = stream.pipe(rename({extname: '.min.js'}))
     .pipe(uglify())
     .pipe(gulp.dest('./dist/' + buildDir))
 
@@ -68,7 +68,7 @@ gulp.task('css', () => {
     stream = stream.pipe(gulp.dest(dir));
   }
   
-  stream.pipe(rename({extname: '.min.css'}))
+  stream = stream.pipe(rename({extname: '.min.css'}))
     .pipe(cssmin())
     .pipe(gulp.dest('./dist/' + buildDir))
 

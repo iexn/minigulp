@@ -92,17 +92,22 @@ const component = (function () {
      * 创建组件模型
      */
     component.create = function (template, data = {}, options = {}) {
-        // 处理带数据的字符串模板
-        // 匹配如同 {{name}} 的字符串模板
-        const reg = /\{\{(\w+)\}\}/g;
-        let exec = null;
-        // 依次获取匹配内容
-        while(exec = reg.exec(template)) {
-            // 替换掉真实数据，如果不存在数据，将替换为空字符串
-            template = template.replace(new RegExp(exec[0], "g"), util.defaults(data[exec[1]], ""));
+        let DOM;
+        if (util.isDom(template)) {
+            DOM = template;
+        } else {
+            // 处理带数据的字符串模板
+            // 匹配如同 {{name}} 的字符串模板
+            const reg = /\{\{(\w+)\}\}/g;
+            let exec = null;
+            // 依次获取匹配内容
+            while(exec = reg.exec(template)) {
+                // 替换掉真实数据，如果不存在数据，将替换为空字符串
+                template = template.replace(new RegExp(exec[0], "g"), util.defaults(data[exec[1]], ""));
+            }
+    
+            DOM = render.create(template);
         }
-
-        let DOM = render.create(template);
         
         let bindSet = {};
 
@@ -164,6 +169,25 @@ const component = (function () {
             on,
             off,
             trigger,
+            addEventListener: DOM.addEventListener.bind(DOM),
+            querySelector: DOM.querySelector.bind(DOM),
+            querySelectorAll: DOM.querySelectorAll.bind(DOM),
+            appoint: function (selector) {
+                try {
+                    return component.create(DOM.querySelector(selector));
+                } catch (error) {
+                    throw "未找到DOM结构：" + selector;
+                }
+            },
+            empty: function () {
+                DOM.innerHTML = "";
+                return DOMMAP;
+            },
+            remove: function () {
+                if (DOM.parentNode) {
+                    DOM.parentNode.removeChild(DOM);
+                }
+            },
             onDataChange: function (callback) {
                 dataChange = callback;
             },

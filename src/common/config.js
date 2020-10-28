@@ -68,7 +68,7 @@ Object.defineProperties(config, {
         writable: false
     },
     VERSION: {
-        value: "1.2.0",
+        value: "1.3.0",
         writable: false
     }
 });

@@ -3,3 +3,9 @@ function lang(key, language = ZH_CN) {
         $$.debug(err);
     });
 }
+
+function weuialert(msg, callback) {
+    return weui.alert(msg, callback, {
+        isAndroid: false
+    });
+}
