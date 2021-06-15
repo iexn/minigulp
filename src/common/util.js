@@ -717,3 +717,8 @@ const util = function () {
 
     return util;
 }();
+
+exports.util = util;
+exports.getCalendarDate = function () {
+    return new Date();
+};

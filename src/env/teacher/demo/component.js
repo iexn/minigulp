@@ -16,3 +16,5 @@ component.header = function (data = {}) {
 
     return DM;
 };
+
+export default component;

@@ -1105,6 +1105,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     var $body = $(body);
     var $self = $(self);
 
+    console.log(util)
+
     function lang(key) {
       var language = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : ZH_CN;
       var langs = $$.lang[language];

@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "es6",
+        "target": "es5",
+        "lib": ["es2015", "dom"],
+        "allowJs": false,
+        "moduleResolution": "node",
+        "suppressImplicitAnyIndexErrors": true,
+        "paths": {
+            "@/*": ["./src/*"]
+        }
+    }
+}
