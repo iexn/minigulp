@@ -142,75 +142,78 @@ function createAppSourceMap(cb) {
     cb(appMap);
 }
 
-function colAppTask (cb) {
+function colOnceTask(app, cb) {
+    // 执行资源任务创建资源清单
+    let globs = [];
+    Object.values(app.pages).map(page => {
+        globs.push(...page.resource);
+    });
+
+    // 定制支持的类型 [js,scss]
+    let _task = {
+        common: function (stream) {
+            return stream
+                .pipe(rename(function (pathinfo, file) {
+                    let relativePath = path.relative(appDir, file.dirname);
+                    pathinfo.basename = path.basename(relativePath);
+                    pathinfo.dirname = "assets";
+                    return pathinfo;
+                }))
+                .pipe(rev())
+                .pipe(gulp.dest(outputDir + app.name))
+                .pipe(rev.manifest(cacheDir + app.name + "/rev-manifest.json", {
+                    base: cacheDir + app.name,
+                    merge: true
+                }))
+                .pipe(gulp.dest(cacheDir + app.name))
+        },
+        scss: function () {
+            return gulp.src(globs.filter(glob => {
+                return path.extname(glob) == ".scss"
+            }))
+                .pipe(sass())
+                .pipe(autoprefixer({
+                    remove: false,
+                    grid: 'autoplace'
+                }))
+                .pipe(cssFormat());
+        },
+        js: function () {
+            return gulp.src(globs.filter(glob => {
+                return path.extname(glob) == ".js"
+            }))
+                .pipe(babel({
+                    presets: ['@babel/env']
+                }))
+        }
+    };
+
+    // 统一执行
+
+    // 配置资源生成清单
+    _task.common(_task.js()).on("finish", function () {
+        _task.common(_task.scss()).on("finish", function () {
+            // 执行入口文件匹配使用资源清单
+            gulp.src([
+                cacheDir + app.name + "/rev-manifest.json",
+                cacheDir + app.name + "/*.html"
+            ])
+                .pipe(revCollector({
+                    replaceReved: true,
+                    dirReplacements: {}
+                }))
+                .pipe(gulp.dest(outputDir + app.name))
+                .on("finish", function () {
+                    cb && cb();
+                })
+        })
+    })
+}
+
+function colAppTask(cb) {
     createAppSourceMap(function (appMap) {
         Object.values(appMap).forEach(app => {
-            // 执行资源任务创建资源清单
-            let globs = [];
-            Object.values(app.pages).map(page => {
-                globs.push(...page.resource);
-            });
-
-            // 定制支持的类型 [js,scss]
-            let _task = {
-                common: function (stream) {
-                    return stream
-                        .pipe(rename(function (pathinfo, file) {
-                            let relativePath = path.relative(appDir, file.dirname);
-                            pathinfo.basename = path.basename(relativePath);
-                            pathinfo.dirname = "assets";
-                            return pathinfo;
-                        }))
-                        .pipe(rev())
-                        .pipe(gulp.dest(outputDir + app.name))
-                        .pipe(rev.manifest(cacheDir + app.name + "/rev-manifest.json", {
-                            base: cacheDir + app.name,
-                            merge: true
-                        }))
-                        .pipe(gulp.dest(cacheDir + app.name))
-                },
-                scss: function () {
-                    return gulp.src(globs.filter(glob => {
-                        return path.extname(glob) == ".scss"
-                    }))
-                        .pipe(sass())
-                        .pipe(autoprefixer({
-                            remove: false,
-                            grid: 'autoplace'
-                        }))
-                        .pipe(cssFormat());
-                },
-                js: function () {
-                    return gulp.src(globs.filter(glob => {
-                        return path.extname(glob) == ".js"
-                    }))
-                        .pipe(babel({
-                            presets: ['@babel/env']
-                        }))
-                }
-            };
-
-            // 统一执行
-
-            // 配置资源生成清单
-            _task.common(_task.js()).on("finish", function () {
-                _task.common(_task.scss()).on("finish", function () {
-                    // 执行入口文件匹配使用资源清单
-                    gulp.src([
-                        cacheDir + app.name + "/rev-manifest.json",
-                        cacheDir + app.name + "/*.html"
-                    ])
-                        .pipe(revCollector({
-                            replaceReved: true,
-                            dirReplacements: {}
-                        }))
-                        .pipe(gulp.dest(outputDir + app.name))
-                        .on("finish", function () {
-                            cb && cb();
-                        })
-                })
-            })
-
+            colOnceTask(app, cb);
         });
     });
 }
@@ -222,7 +225,17 @@ gulp.task('default', gulp.series(['clean:dist', 'clean:cache'], function (done) 
     });
 }));
 
-
+createAppSourceMap(function (appMap) {
+    Object.values(appMap).forEach(app => {
+        gulp.task("build:" + app.name, function (done) {
+            colOnceTask(app, function () {
+                cleanCache();
+                done()
+            });
+        });
+        cleanCache();
+    });
+});
 
 
 // // 打包js
