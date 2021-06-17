@@ -11,3 +11,8 @@ npm run serve
 npm run build
 
 ```
+
+
+人员管理
+记录管理
+配置管理

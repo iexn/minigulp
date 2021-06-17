@@ -1,0 +1,33 @@
+<div id="APP_FRAME">
+    <link rel="stylesheet" href="/eduWeixin/web/lib/layui/css/layui.css">
+    <%= htmlWebpackPlugin.tags.headTags %>
+    <link rel="stylesheet" href="./assets/demo.css">
+    <script src="./assets/demo.js"></script>
+    <div id="app">
+        <!--三级菜单-->
+        <ul class="categoryTxt"></ul>
+
+        <!-- 面包屑-->
+        <div class="subCrumbs">
+            <span>当前位置：</span>
+            <span>首页</span>
+            <span>/</span>
+            <span>卫生防疫</span>
+            <span>/</span>
+            <span>我代管的</span>
+            <span>/</span>
+            <span>文章详情</span>
+        </div>
+        <!-- 面包屑 end-->
+
+        <!--数据展示区-->
+        <div class="content-wrap">
+            <div id="J3_1_frame"></div>
+            
+        </div>
+    </div>
+
+    <script src="/eduWeixin/web/lib/layui/layui.js"></script>
+    <script>"use strict";layui.config({dir:"/eduWeixin/web/lib/layui/"});;</script>
+    <%= htmlWebpackPlugin.tags.bodyTags %>
+</div>
