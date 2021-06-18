@@ -23,10 +23,13 @@ const buildDir = "assets";
 // 远程发布地址
 const dir = "";
 
-
-
+const babelify = require('babelify');
+const source = require('vinyl-source-stream');
 const rev = require("gulp-rev");
 const revCollector = require("gulp-rev-collector");
+const art = require("art-template");
+const browserify = require('gulp-browserify');
+const header = require('gulp-header');
 const outputDir = "./dist/";
 const cacheDir = "./.cache/";
 const codeDir = "./src/";
@@ -117,8 +120,8 @@ function createAppSourceMap(cb) {
                 _entry: _singleAppDir + "index.html",
                 entry: cacheDir + appName + "/" + pageName + ".html",
                 resource: [
-                    _pageDir + "index.js",
                     _pageDir + "index.scss",
+                    _pageDir + "index.js",
                 ]
             };
 
@@ -131,7 +134,38 @@ function createAppSourceMap(cb) {
                 });
             }
 
-            fs.writeFileSync(page.entry, fs.readFileSync(page._entry), {
+            let template = fs.readFileSync(page._entry).toString();
+
+            try {
+                // 模板替换
+                if (template != '') {
+                    let headTags = [];
+                    let bodyTags = [];
+        
+                    page.resource.forEach(glob => {
+                        let ext = path.extname(glob);
+                        if (ext == ".scss") {
+                            headTags.push('<link rel="stylesheet" href="./assets/'+ pageName +'.min.css">');
+                        }
+        
+                        if (ext == ".js") {
+                            bodyTags.push('<script src="./assets/'+ pageName +'.min.js"></script>');
+                        }
+                    });
+                    template = art.render(template, {
+                        htmlWebpackPlugin: {
+                            tags: {
+                                headTags: headTags.join(""),
+                                bodyTags: bodyTags.join(""),
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.log("模板编译失败：", error.message);
+            }
+            
+            fs.writeFileSync(page.entry, template, {
                 flag: "w+"
             });
         });
@@ -153,12 +187,6 @@ function colOnceTask(app, cb) {
     let _task = {
         common: function (stream) {
             return stream
-                .pipe(rename(function (pathinfo, file) {
-                    let relativePath = path.relative(appDir, file.dirname);
-                    pathinfo.basename = path.basename(relativePath);
-                    pathinfo.dirname = "assets";
-                    return pathinfo;
-                }))
                 .pipe(rev())
                 .pipe(gulp.dest(outputDir + app.name))
                 .pipe(rev.manifest(cacheDir + app.name + "/rev-manifest.json", {
@@ -176,15 +204,58 @@ function colOnceTask(app, cb) {
                     remove: false,
                     grid: 'autoplace'
                 }))
-                .pipe(cssFormat());
+                .pipe(cssFormat())
+                .pipe(rename(function (pathinfo, file) {
+                    let relativePath = path.relative(appDir, file.dirname);
+                    pathinfo.basename = path.basename(relativePath);
+                    pathinfo.dirname = "assets";
+                    return pathinfo;
+                }))
+                .pipe(cssmin())
+                .pipe(rename({extname: '.min.css'}))
         },
         js: function () {
+            // return browserify({
+            //     entries: globs.filter(glob => {
+            //         return path.extname(glob) == ".js"
+            //     }),
+                
+            // })
+            //     .transform(babelify, {
+            //         presets: [
+            //             '@babel/preset-env',  //转换es6代码
+            //         ]
+            //     })
+            //     .bundle()
+            //     .pipe(source("*.min.js"))
+
             return gulp.src(globs.filter(glob => {
                 return path.extname(glob) == ".js"
             }))
-                .pipe(babel({
-                    presets: ['@babel/env']
+                .pipe(browserify({
+                    transform: ['babelify'],
+                    insertGlobals : true
                 }))
+                // .pipe(babel({
+                //     presets: ['@babel/preset-env']
+                // }))
+                .pipe(rename(function (pathinfo, file) {
+                    let relativePath = path.relative(appDir, file.dirname);
+                    pathinfo.basename = path.basename(relativePath);
+                    pathinfo.dirname = "assets";
+                    return pathinfo;
+                }))
+                .pipe(uglify())
+                .pipe(rename({extname: '.min.js'}))
+                .pipe(header([
+                    '/**',
+                    ' * <%= package.name %> - <%= package.description %>',
+                    ' * @version v<%= package.version %>',
+                    ' * @createtime ' + new Date(),
+                    ' * @license <%= package.license %>',
+                    ' */',
+                    ''
+                ].join("\r\n"), { package }))
         }
     };
 
@@ -219,6 +290,7 @@ function colAppTask(cb) {
 }
 
 gulp.task('default', gulp.series(['clean:dist', 'clean:cache'], function (done) {
+    // fs.mkdirSync("./.cache");
     colAppTask(function () {
         cleanCache();
         done();
@@ -229,11 +301,11 @@ createAppSourceMap(function (appMap) {
     Object.values(appMap).forEach(app => {
         gulp.task("build:" + app.name, function (done) {
             colOnceTask(app, function () {
-                cleanCache();
+                // cleanCache();
                 done()
             });
         });
-        cleanCache();
+        // cleanCache();
     });
 });
 

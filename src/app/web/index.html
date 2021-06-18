@@ -1,8 +1,6 @@
 <div id="APP_FRAME">
     <link rel="stylesheet" href="/eduWeixin/web/lib/layui/css/layui.css">
-    <%= htmlWebpackPlugin.tags.headTags %>
-    <link rel="stylesheet" href="./assets/demo.css">
-    <script src="./assets/demo.js"></script>
+    <%- htmlWebpackPlugin.tags.headTags %>
     <div id="app">
         <!--三级菜单-->
         <ul class="categoryTxt"></ul>
@@ -29,5 +27,5 @@
 
     <script src="/eduWeixin/web/lib/layui/layui.js"></script>
     <script>"use strict";layui.config({dir:"/eduWeixin/web/lib/layui/"});;</script>
-    <%= htmlWebpackPlugin.tags.bodyTags %>
+    <%- htmlWebpackPlugin.tags.bodyTags %>
 </div>

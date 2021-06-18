@@ -6,4 +6,4 @@ function init() {
     Container.render();
 }
 
-init();
+export default init;

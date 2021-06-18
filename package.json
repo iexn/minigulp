@@ -1,6 +1,6 @@
 {
-  "name": "minigulp",
-  "version": "1.3.1",
+  "name": "mwork",
+  "version": "2.0.1-alpha:2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -16,13 +16,20 @@
   "devDependencies": {
     "@babel/core": "^7.7.5",
     "@babel/preset-env": "^7.7.6",
+    "@babel/preset-es2015": "^7.0.0-beta.53",
+    "@babel/preset-stage-0": "^7.8.3",
+    "art-template": "^4.13.2",
+    "babelify": "^10.0.0",
+    "browserify": "^17.0.0",
     "gulp": "^4.0.2",
     "gulp-autoprefixer": "^7.0.1",
     "gulp-babel": "^8.0.0",
+    "gulp-browserify": "^0.5.1",
     "gulp-clean": "^0.4.0",
     "gulp-concat": "^2.6.1",
     "gulp-css-format": "^0.1.2",
     "gulp-cssmin": "^0.2.0",
+    "gulp-header": "^2.0.9",
     "gulp-htmlmin": "^5.0.1",
     "gulp-imagemin": "^6.2.0",
     "gulp-include": "^2.4.1",
@@ -31,6 +38,7 @@
     "gulp-rev-collector": "^1.3.3",
     "gulp-sass": "^4.1.0",
     "gulp-uglify": "^3.0.2",
+    "vinyl-source-stream": "^2.0.0",
     "wpage": "^2.0.6"
   },
   "dependencies": {}
