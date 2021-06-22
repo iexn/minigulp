@@ -3,6 +3,7 @@ const glob = require("glob");
 const webpack = require("webpack");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const package = require("./package.json");
 
 
@@ -95,6 +96,7 @@ function webpackConfig() {
                     ]
                 },
                 plugins: [
+                    new CleanWebpackPlugin(),
                     new MiniCssExtractPlugin({
                         filename: function (pathresolve) {
                             return 'assets/[name].[chunkhash:8].css'
