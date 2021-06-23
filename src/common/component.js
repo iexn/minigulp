@@ -1,5 +1,5 @@
 const component = (function () {
-    //= include common/render.js
+    //= include common/ext/render.js
 
     const component = {};
 
@@ -92,6 +92,10 @@ const component = (function () {
      * 创建组件模型
      */
     component.create = function (template, data = {}, options = {}) {
+        if (util.type(template) == "object" && template.__OBJTYPE__ == OBJTYPE) {
+            return template;
+        }
+
         let DOM;
         if (util.isDom(template)) {
             DOM = template;
@@ -149,6 +153,10 @@ const component = (function () {
             }
         }
 
+        function onDataChange(name, vals) {
+            callback && callback();
+        }
+
         options = Object.assign({
             accessDom: false
         }, options);
@@ -168,20 +176,34 @@ const component = (function () {
             addEventListener: DOM.addEventListener.bind(DOM),
             querySelector: DOM.querySelector.bind(DOM),
             querySelectorAll: DOM.querySelectorAll.bind(DOM),
-            appoint: function (selector) {
+            appoint: function (selector, data, options={}) {
                 try {
-                    return component.create(DOM.querySelector(selector));
+                    return component.create(DOM.querySelector(selector), data, options);
                 } catch (error) {
-                    throw "未找到DOM结构：" + selector;
+                    if (options.error !== false) {
+                        console.error("appoint未找到DOM结构：" + selector);
+                    }
+                    return null;
                 }
             },
             empty: function () {
                 DOM.innerHTML = "";
                 return DOMMAP;
             },
+            nfempty: function () {
+                while(DOM.children.length > 1) {
+                    DOM.removeChild(DOM.lastChild);
+                }
+                return DOMMAP;
+            },
             remove: function () {
                 if (DOM.parentNode) {
                     DOM.parentNode.removeChild(DOM);
+                }
+            },
+            parent: function () {
+                if (DOM.parentNode) {
+                    return component.create(DOM.parentNode);
                 }
             },
             onDataChange: function (callback) {
@@ -196,10 +218,14 @@ const component = (function () {
                 }
 
                 templates.map(template => {
+                    if (typeof template == "string") {
+                        template = component.create(template);
+                    }
+
                     if (template.__OBJTYPE__ == OBJTYPE) {
                         DOM.appendChild(template.el);
                     } else {
-                        debug("未识别的模板内容：template不是一个" + OBJTYPE + "对象，已被系统忽略");
+                        trace("未识别的模板内容：template不是一个" + OBJTYPE + "对象，已被系统忽略");
                     }
                     return false;
                 }).filter(dom => {
@@ -208,9 +234,19 @@ const component = (function () {
                     DOM.appendChild(dom);
                 });
 
-                return this;
+                return DOMMAP;
             },
         };
+
+        DOMMAP.html = function (DM) {
+            DOMMAP.empty().append(component.create(DM));
+            return DOMMAP;
+        }
+        
+        DOMMAP.text = function (text) {
+            DOMMAP.empty().el.innerHTML = text;
+            return DOMMAP;
+        }
 
         Object.defineProperty(DOMMAP, "__OBJTYPE__", {
             enumerable: false,
@@ -220,11 +256,48 @@ const component = (function () {
 
         // 是否将数据存入到dom上的__DATA__变量中
         if (options.accessDom) {
-            DOM.__proto__.__DATA__ = __DATA__;
+            DOM.__DATA__ = __DATA__;
         }
 
         return DOMMAP;
-    };
+    }
+
+    component.appoint = function (selector, data, options) {
+        return component.create(document.querySelector(selector), data, options);
+    }
+
+    // 上传文件
+    component.uploadExcel = function (callback) {
+        let DOMMAP = component.create('<input type="file" accept=".xls,.xlsx"/>');
+        DOMMAP.addEventListener("change", function (e) {
+            let files = e.target.files;
+            if (files.length == 0) {
+                return;
+            }
+            
+            callback && callback(files);
+        });
+
+        DOMMAP.el.click();
+
+        return DOMMAP;
+    }
+
+    component.loading = function (loading_text) {
+        let $loading = $(`<div class='loading-bg' loading-id='1' style="z-index:10200000"></div><div class='loadingimg' loading-id='2' style="z-index:10200000"><img src='images/loading-2.gif'><div>${loading_text || "数据加载中，请稍后..."}</div></div>`);
+        $(".loading-bg").remove();
+        $(".loadingimg").remove();
+        $(".topbar").after($loading);
+        return {
+            hide: function (callback) {
+                let $bg = $(".loading-bg");
+                let $img = $(".loadingimg");
+                $bg.fadeOut("fast");
+                $img.fadeOut("fast");
+                callback && callback();
+            }
+        };
+    }
 
     // = block:main
 

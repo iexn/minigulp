@@ -13,14 +13,25 @@ module.exports = {
      * 
      * 资源文件夹输出目录名
      */
-    resourceDirName: "resource",
+    resourceDir: "resource",
 
     /** 
      * @param {true | string}
      * 
      * 资源文件引用路径
-     * true：默认路径，根据 mergeResource 参数设置
+     * true：默认路径，根据 mergeResource 参数设置，当mergeResource=true时生效
      * 指定位置：将按照设置的路径引用资源文件
      */
-    resourcePublicPath: true
+    resourcePublicPath: true,
+
+    /** 
+     * @param {false | string}
+     * 
+     * 导出时是否同时复制一份到指定文件夹
+     * false：不复制
+     * 指定位置：复制一份到指定位置。如果指定位置存在则不复制
+     * 复制文件夹名称：dist@版本号
+     * @暂时不用
+     */
+    outputRemoteDir: false,
 };

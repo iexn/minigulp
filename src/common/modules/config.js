@@ -1,4 +1,4 @@
-const config = {
+export default {
     /* 基本信息 */
     // 默认头像
     DEFAULT_AVATAR: "/shijiwxy/weixin/images/defaultHead.jpg",
@@ -60,15 +60,3 @@ const config = {
         'openProductSpecificView',
     ]
 };
-
-// 版本信息
-Object.defineProperties(config, {
-    DEBUG: {
-        value: true,
-        writable: false
-    },
-    VERSION: {
-        value: "1.3.1",
-        writable: false
-    }
-});

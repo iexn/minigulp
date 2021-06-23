@@ -1,13 +1,18 @@
-const cache = (function () {
-    const cache = {};
-    const appStorage = {};
+import { getCalendarDate, isEmpty } from "./util";
 
-    let timeKeySuffix = "~overdueTime";
-    
+export default new class Cache {
+    constructor() {
+        this.appStorage = {};
+        this.timeKeySuffix = "~overdueTime";
 
-    cache.get = function (key, type = APP_STORAGE) {
-        let time = util.getCalendarDate(new Date);
-        let timeKey = key + timeKeySuffix;
+        this.APP_STORAGE     = "app";
+        this.SESSION_STORAGE = "session";
+        this.LOCAL_STORAGE   = "local";
+    }
+
+    get(key, type = this.APP_STORAGE) {
+        let time = getCalendarDate(new Date);
+        let timeKey = key + this.timeKeySuffix;
 
         // 过期时间
         let storageTime;
@@ -16,9 +21,9 @@ const cache = (function () {
 
         // 获取数据及过期时间
         switch (type) {
-            case APP_STORAGE:
-                let ase = appStorage[key];
-                if (util.isEmpty(ase)) {
+            case this.APP_STORAGE:
+                let ase = this.appStorage[key];
+                if (isEmpty(ase)) {
                     ase = {
                         storageTime: null,
                         storageValue: null
@@ -27,10 +32,10 @@ const cache = (function () {
                 storageTime  = ase.overdueTime;
                 storageValue = ase.data;
                 break;
-            case SESSION_STORAGE:
+            case this.SESSION_STORAGE:
                 storageTime  = sessionStorage.getItem(timeKey);
                 storageValue = sessionStorage.getItem(key);
-            case LOCAL_STORAGE:
+            case this.LOCAL_STORAGE:
                 storageTime  = localStorage.getItem(timeKey);
                 storageValue = localStorage.getItem(key);
         }
@@ -55,14 +60,11 @@ const cache = (function () {
         }
 
         return storageValue;
-    };
+    }
 
-    /** 
-     * 缓存数据
-     */
-    cache.set = function (key, value, type = APP_STORAGE, overdueSecond = null) {
-        let time = util.getCalendarDate(new Date);
-        let timeKey = key + timeKeySuffix;
+    set(key, value, type = this.APP_STORAGE, overdueSecond = null) {
+        let time = getCalendarDate(new Date);
+        let timeKey = key + this.timeKeySuffix;
 
         // 过期时间，0表示不设置过期
         let overdueTime = 0;
@@ -73,19 +75,19 @@ const cache = (function () {
 
         // 获取数据及过期时间
         switch (type) {
-            case APP_STORAGE:
+            case this.APP_STORAGE:
                 if (value === null) {
-                    delete appStorage[key];
+                    delete this.appStorage[key];
                     return;
                 }
                 
-                appStorage[key] = {
+                this.appStorage[key] = {
                     storageTime: overdueTime,
                     storageValue: value
                 };
 
                 break;
-            case SESSION_STORAGE:
+            case this.SESSION_STORAGE:
                 if (value === null) {
                     sessionStorage.removeItem(timeKey);
                     sessionStorage.removeItem(key);
@@ -97,7 +99,7 @@ const cache = (function () {
                 } catch (e) {
                     sessionStorage.setItem(key, value);
                 }
-            case LOCAL_STORAGE:
+            case this.LOCAL_STORAGE:
                 if (value === null) {
                     localStorage.removeItem(timeKey);
                     localStorage.removeItem(key);
@@ -111,6 +113,4 @@ const cache = (function () {
                 }
         }
     };
-
-    return cache;
-})();
+}
