@@ -16,13 +16,13 @@ module.exports = {
     resourceDir: "resource",
 
     /** 
-     * @param {true | string}
+     * @param {string}
      * 
      * 资源文件引用路径
-     * true：默认路径，根据 mergeResource 参数设置，当mergeResource=true时生效
+     * ""：默认路径，根据 mergeResource 参数设置，当mergeResource=true时生效
      * 指定位置：将按照设置的路径引用资源文件
      */
-    resourcePublicPath: true,
+    resourcePublicPath: "",
 
     /** 
      * @param {false | string}
