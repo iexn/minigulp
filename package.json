@@ -1,10 +1,14 @@
 {
   "name": "mwork",
   "version": "2.0.1",
+  "mwork": "2.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "webpack",
+    "serve": "webpack-dev-server --open",
+    "serve:web": "webpack-dev-server --open --mode development --app web",
+    "serve:teacher": "webpack-dev-server --open --app teacher",
+    "serve:parent": "webpack-dev-server --open --app parent",
     "build": "rimraf ./dist && webpack --config ./webpack.config.js"
   },
   "keywords": [],
@@ -26,7 +30,8 @@
     "url-loader": "^4.1.1",
     "webpack": "^5.39.1",
     "webpack-bundle-analyzer": "^4.4.2",
-    "webpack-cli": "^4.7.2"
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
     "art-template": "^4.13.2",

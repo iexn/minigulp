@@ -1,4 +1,10 @@
+const path = require("path");
+
 module.exports = {
+    /** 
+     * 版本号
+     */
+    MWORKVERSION: "2.0.1.013",
     /** 
      * @param {string[]}
      * 
@@ -33,4 +39,11 @@ module.exports = {
      * 输出依赖文件的文件夹名称
      */
     assetsDir: "assets",
+
+    /** 
+     * 运行根目录
+     */
+    processDir: process.cwd(),
+
+    mworkConfig: require(path.resolve(process.cwd(), "mwork.config"))
 };

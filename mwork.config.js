@@ -34,4 +34,12 @@ module.exports = {
      * @暂时不用
      */
     outputRemoteDir: false,
+
+    /** 
+     * @param {object}
+     * 
+     * 开发环境请求路径代理设置
+     * 参考 webpack-dev-server 和 webpack.devServer 中的设置
+     */
+    devProxy: {}
 };
