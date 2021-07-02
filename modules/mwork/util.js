@@ -26,7 +26,16 @@ exports.getArgv = function (name = true) {
         
         // 上一个的参数的值
         result[findedArgvName] = _argv;
+        findedArgvName = false;
     });
+
+    // 整理数据
+    for (let name in result) {
+        if (result[name].length == 0) {
+            result[name] = "";
+            continue;
+        }
+    }
 
     if (name === true) {
         return result;

@@ -1,11 +1,16 @@
-const { getArgv } = require("./util");
+const { getArgv, join } = require("./util");
 const { createAppSourceMap } = require("./webpack/common");
+const config = require("./config");
 
+let version = getArgv("version");
+if (version) {
+    config.version = version;
+}
 
 function getWebpackConfig(terminal) {
     let mode = getArgv("mode");
     
-    switch (mode[0]) {
+    switch (mode) {
         case "development":
             mode = "dev";
             break;

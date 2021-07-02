@@ -1,15 +1,17 @@
+const mode = "prod";
+
 module.exports = function (terminal) {
     let _config = {
         mode: 'production',
-        entry: require("./.config/entry")("prod", terminal),
-        output: require("./.config/output")("prod", terminal),
-        module: require("./.config/module")("prod", terminal),
-        plugins: require("./.config/plugins")("prod", terminal),
-        resolve: require("./.config/resolve")("prod", terminal),
-        optimization: require("./.config/optimization")("prod", terminal),
+        entry: require("./.config/entry")(mode, terminal),
+        output: require("./.config/output")(mode, terminal),
+        module: require("./.config/module")(mode, terminal),
+        plugins: require("./.config/plugins")(mode, terminal),
+        resolve: require("./.config/resolve")(mode, terminal),
+        optimization: require("./.config/optimization")(mode, terminal),
         // profile: true,
-        externals: require("./.config/externals")("prod", terminal),
+        externals: require("./.config/externals")(mode, terminal),
     };
-
-    return _config
+    
+    return _config;
 };

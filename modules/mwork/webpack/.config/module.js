@@ -3,16 +3,17 @@ const { join } = require("../../util");
 const config = require("../../config");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-/** 
- * 输出资源文件夹名相对位置
- * 相对位置：dist\**\
- */
-let outputResource = join(config.assetsDir, config.mworkConfig.resourceDir);
-if (config.mworkConfig.mergeResource) {
-    outputResource = join("..", config.mworkConfig.resourceDir);
-}
 
-module.exports = function (mode) {
+module.exports = function (mode, terminal) {
+    /** 
+     * 输出资源文件夹名相对位置
+     * 相对位置：dist\**\
+     */
+    let outputResource = join(terminal.name, config.assetsDir, config.mworkConfig.resourceDir);
+    if (config.mworkConfig.mergeResource) {
+        outputResource = join(terminal.name, config.mworkConfig.resourceDir);
+    }
+
     return {
         rules: [
             {

@@ -53,3 +53,11 @@ exports.createAppSourceMap = function (cb) {
 
    cb(Object.values(terminalsMap));
 }
+
+exports.getOutputPath = function (mode) {
+    return mode == "dev" ? config.cachePath : config.outputPath;
+}
+
+exports.getRealOutputPath = function (mode, terminal) {
+    return join(config.processDir, exports.getOutputPath(mode), terminal.name);
+}

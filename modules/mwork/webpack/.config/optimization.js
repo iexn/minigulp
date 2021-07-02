@@ -1,8 +1,9 @@
 module.exports = function (mode, terminal) {
     return {
+        usedExports: true,
         splitChunks: {
             chunks: "initial",
-            minSize: 30720, // 模块的最小体积 30k
+            minSize: 10240, // 模块的最小体积 10k
             minChunks: 1, // 模块的最小被引用次数
             maxAsyncRequests: 1, // 按需加载的最大并行请求数
             maxInitialRequests: 1, // 一个入口最大并行请求数

@@ -1,11 +1,13 @@
-import render from './template'
+// import render from './template'
 // import './index.scss';
 // import '~/common/scss/index.scss';
 // import '@resource/images/1.jpg';
-// import _ from 'lodash';
-// import axios from 'axios';
+// import {defaults} from 'lodash';
+// import {create} from 'axios';
+// import $ from 'jquery';
+import "weui";
+import {loading} from "weui.js";
 
-import $ from 'jquery';
+loading.loading("加载中");
 
-console.log($, "2222");
-render("测试");
+// render("测试");

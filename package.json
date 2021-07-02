@@ -1,16 +1,19 @@
 {
   "name": "mwork",
-  "version": "2.0.1",
-  "mwork": "2.0.1",
+  "version": "1.1.16",
+  "mwork": "2.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "serve": "webpack-dev-server --open",
-    "serve:web": "webpack-dev-server --open --mode development --app web",
-    "serve:teacher": "webpack-dev-server --open --app teacher",
-    "serve:parent": "webpack-dev-server --open --app parent",
-    "build": "rimraf ./dist && webpack --config ./webpack.config.js"
+    "mwork:serve": "node ./modules/mwork/bin/serve",
+    "mwork:build": "node ./modules/mwork/bin/build",
+    "serve": "webpack-dev-server --mode development",
+    "serve:web": "webpack-dev-server --mode development --app web",
+    "serve:teacher": "webpack-dev-server --mode development --app teacher",
+    "serve:parent": "webpack-dev-server --mode development --app parent",
+    "build": "webpack --config ./webpack.config.js --optimize-minimize"
   },
+  "sideEffects": false,
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -18,7 +21,8 @@
     "@babel/core": "^7.7.5",
     "@babel/preset-env": "^7.7.6",
     "babel-loader": "^8.2.2",
-    "clean-webpack-plugin": "^4.0.0-alpha.0",
+    "child_process": "^1.0.2",
+    "colors": "^1.4.0",
     "css-loader": "^5.2.6",
     "file-loader": "^6.2.0",
     "glob": "^7.1.7",
@@ -36,6 +40,9 @@
   "dependencies": {
     "art-template": "^4.13.2",
     "axios": "^0.21.1",
-    "lodash": "^4.17.21"
+    "crypto": "^1.0.1",
+    "lodash": "^4.17.21",
+    "weui": "^2.4.4",
+    "weui.js": "^1.2.2"
   }
 }

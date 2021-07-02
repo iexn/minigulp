@@ -1,6 +1,7 @@
 const path = require("path");
 const { join } = require("../../util");
 const config = require("../../config");
+const { getRealOutputPath } = require("../common");
 
 /** 
  * 链接位置
@@ -12,9 +13,9 @@ if (typeof config.mworkConfig.resourcePublicPath == "string") {
 
 module.exports = function (mode, terminal) {
     return {
-        filename: join(config.assetsDir, '[name].[hash:8].js'),
+        filename: join(terminal.name, config.assetsDir, '[name].[hash:8].js'),
         // path: path.resolve("dist", terminal.name),
-        path: path.resolve(config.processDir, "dist", terminal.name),
+        path: getRealOutputPath(mode, {name: ""}),
         publicPath: resourcePublicPath,
     };
 }
